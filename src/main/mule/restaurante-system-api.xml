@@ -12,6 +12,12 @@ http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mu
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="033af67b-c5f8-483e-9b9e-45d1992567da" >
 		<salesforce:basic-connection username="${secure::sf.user}" password="${secure::sf.pass}" securityToken="${secure::sf.token}" />
 	</salesforce:sfdc-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="05b9da40-1d19-4967-8e49-cf61532f7a3e">
+		<http:request-connection protocol="HTTPS" host="graph.facebook.com"/>
+		<http:default-headers >
+			<http:default-header key="Authorization" value="Bearer EAAEfa0V5PHIBO18c6EGzVf9Pz8JsDpPZCAWZBWdjks6JMkMSnJSicbzJXACJxSqQJzOwyKo9hr9Tpd3UCIMZAK1srFxpw3NCMqAcir64kZAWB7gSr5xhOJJlZCgYnWQ7OxmFckUleFDyGDVLU6P68DUMZAK1UR951XV8FG1s6fvZBXRZCNlqhmjIkbqbxy4s1orcEQjcveOWcnJSe0aZCwSAZD" />
+		</http:default-headers>
+	</http:request-config>
 	<flow name="restaurante-system-api-main">
         <http:listener config-ref="restaurante-system-api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -269,7 +275,7 @@ payload]]></ee:set-payload>
 			<when expression="#[attributes.queryParams.fecha?]" >
 				<salesforce:query doc:name="Query" doc:id="4619f18a-a029-448f-b272-920bf6310e4d" config-ref="Salesforce_Config" >
 					<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, Fecha__c, Hora__c, Personas__c, Tipo_Pago__c, Anotaciones__c
+	ID, Fecha__c, Hora__c, Celular__c, Personas__c, Tipo_Pago__c, Anotaciones__c
 FROM Reservaciones__c
 WHERE Fecha__c = ':fecha']]></salesforce:salesforce-query>
 					<salesforce:parameters ><![CDATA[#[%dw 2.0
@@ -283,7 +289,7 @@ output application/java
 			<otherwise >
 				<salesforce:query doc:name="Query" doc:id="3201bb17-edcc-4a0f-93a1-a8b32db40286" config-ref="Salesforce_Config" >
 					<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, Fecha__c, Hora__c, Personas__c, Tipo_Pago__c, Anotaciones__c
+	ID, Fecha__c, Hora__c, Celular__c, Personas__c, Tipo_Pago__c, Anotaciones__c
 FROM Reservaciones__c]]></salesforce:salesforce-query>
 				</salesforce:query>
 			</otherwise>
@@ -335,7 +341,9 @@ output application/json
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Menu creado."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
     </flow>
@@ -348,6 +356,7 @@ output application/json
 [{
   Fecha__c: payload.Fecha,
   Hora__c: payload.Hora,
+  Celular__c : payload.Celular,
   Personas__c: payload.Personas,
   Tipo_pago__c: payload.Pago,
   Anotaciones__c: payload.Anotaciones
@@ -360,11 +369,13 @@ output application/json
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Reservacion creada."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
     </flow>
-    <flow name="post:\usuarios:application\json:restaurante-system-api-config">
+	<flow name="post:\usuarios:application\json:restaurante-system-api-config">
         <ee:transform doc:name="Transform Message" doc:id="b88a1329-c7f3-49f3-a097-87017742b77d" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
