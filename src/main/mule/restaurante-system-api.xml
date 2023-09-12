@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+    <http:listener-config name="restaurante-system-api-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="${secure::http.port}" protocol="HTTPS" tlsContext="TLS_Context"/>
+    </http:listener-config>
+    <apikit:config name="restaurante-system-api-config" api="restaurante-system-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <tls:context name="TLS_Context" doc:name="TLS Context" doc:id="0d7346ab-bb67-4934-939e-9758a438378c" >
+		<tls:key-store type="jks" path="${secure::key.path}" alias="${secure::key.alias}" keyPassword="${secure::key.pass}" password="${secure::key.pass}" />
+	</tls:context>
+	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="033af67b-c5f8-483e-9b9e-45d1992567da" >
+		<salesforce:basic-connection username="${secure::sf.user}" password="${secure::sf.pass}" securityToken="${secure::sf.token}" />
+	</salesforce:sfdc-config>
+	<flow name="restaurante-system-api-main">
+        <http:listener config-ref="restaurante-system-api-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="restaurante-system-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Bad request",
+	details: error.description
+}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[400]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found",
+	details: error.description}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="restaurante-system-api-console">
+        <http:listener config-ref="restaurante-system-api-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="restaurante-system-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform doc:name="Transform Message">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found",
+	details: error.description}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[404]]></ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="delete:\usuarios\(id):restaurante-system-api-config">
+        <salesforce:query doc:name="Query" doc:id="db3cfb88-1c05-47e3-a5fa-f912e75d963a" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	ID
+FROM Usuarios__c
+WHERE ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	id : attributes.uriParams.id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="60d24aa4-77cb-465d-9d08-04d76110f513" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[payload[0].Id]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:delete doc:name="Delete" doc:id="bf973305-7923-4f83-8495-9c6b695de0fd" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="b1b3b6fe-bb90-40c8-9121-a060da9798a3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="delete:\reservar\(id):restaurante-system-api-config">
+		<salesforce:query doc:name="Query" doc:id="90910175-cb3f-4590-bbff-c5140e10861c" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	ID
+FROM Reservaciones__c
+WHERE ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	id : attributes.uriParams.id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="f827cc7f-a685-4f4f-94c7-ffcddfa62666" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[payload[0].Id]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:delete doc:name="Delete" doc:id="02411d38-df02-455a-a0f4-6add86d4e5a2" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="af116e65-cf9d-4105-9b94-c5a7ec7b262b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="delete:\menu\(id):restaurante-system-api-config">
+		<salesforce:query doc:name="Query" doc:id="ec26496d-efc3-4071-890a-ef9e1965968c" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	ID
+FROM Menu__c
+WHERE ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	id : attributes.uriParams.id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="48c2c76d-1aca-4dea-ba30-07fc32b02bb3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[payload[0].Id]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:delete doc:name="Delete" doc:id="c591d6fa-7f6c-46ff-82e8-36a2124890f8" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="9b987b24-f5a5-4796-a783-c2ce16cbbcb4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="get:\menu:restaurante-system-api-config">
+        <choice doc:name="Choice" doc:id="e0ad993b-c60f-4451-b7e3-62fd8ee3945b" >
+			<when expression="#[attributes.queryParams.nombre?]">
+				<salesforce:query doc:name="Query" doc:id="73aa4d3d-8bfc-4cec-b293-dc2156bf0d0e" config-ref="Salesforce_Config" >
+					<salesforce:salesforce-query ><![CDATA[SELECT
+	ID, Nombre__c, Precio__c, Porciones__c,
+	Tiempo_de_preparacion__c, Imagen__c
+FROM Menu__c
+WHERE Nombre__c = ':nombre']]></salesforce:salesforce-query>
+					<salesforce:parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	nombre : attributes.queryParams.nombre
+}]]]></salesforce:parameters>
+				</salesforce:query>
+			</when>
+			<otherwise >
+				<salesforce:query doc:name="Query" doc:id="ddb70e68-71ca-4320-9941-01ab23f90514" config-ref="Salesforce_Config">
+					<salesforce:salesforce-query ><![CDATA[SELECT
+	ID, Nombre__c, Precio__c, Porciones__c,
+	Tiempo_de_preparacion__c, Imagen__c
+FROM Menu__c]]></salesforce:salesforce-query>
+				</salesforce:query>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\reservar:restaurante-system-api-config">
+		<choice doc:name="Choice" doc:id="f82d9c51-79eb-4858-9e75-06e576c6de16" >
+			<when expression="#[attributes.queryParams.fecha?]" >
+				<salesforce:query doc:name="Query" doc:id="4619f18a-a029-448f-b272-920bf6310e4d" config-ref="Salesforce_Config" >
+					<salesforce:salesforce-query ><![CDATA[SELECT
+	ID, Fecha__c, Hora__c, Personas__c, Tipo_Pago__c, Anotaciones__c
+FROM Reservaciones__c
+WHERE Fecha__c = ':fecha']]></salesforce:salesforce-query>
+					<salesforce:parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	fecha : attributes.queryParams.fecha
+}]]]></salesforce:parameters>
+				</salesforce:query>
+			</when>
+			<otherwise >
+				<salesforce:query doc:name="Query" doc:id="3201bb17-edcc-4a0f-93a1-a8b32db40286" config-ref="Salesforce_Config" >
+					<salesforce:salesforce-query ><![CDATA[SELECT
+	ID, Fecha__c, Hora__c, Personas__c, Tipo_Pago__c, Anotaciones__c
+FROM Reservaciones__c]]></salesforce:salesforce-query>
+				</salesforce:query>
+			</otherwise>
+		</choice>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="get:\usuarios:restaurante-system-api-config">
+        <salesforce:query doc:name="Query" doc:id="8f36dbc8-ba92-45a0-ba8c-904414faa3dc" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	ID, Nombre__c, Puesto__c, Salario__c, Horario__c
+FROM Usuarios__c]]></salesforce:salesforce-query>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+    <flow name="post:\menu:application\json:restaurante-system-api-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[
+	{
+		Nombre__c : payload.Nombre,
+		Precio__c : payload.Precio,
+		Porciones__c : payload.Porciones,
+		Tiempo_de_preparacion__c : payload.Tiempo,
+		Imagen__c : payload.Imagen
+	}
+]]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<salesforce:create doc:name="Create" doc:id="d5cf6907-6b2d-4a4d-b4fa-cd86723b8d8e" config-ref="Salesforce_Config" type="Menu__c"/>
+		<ee:transform doc:name="Transform Message" doc:id="83c12d46-533b-4320-bc44-d6ebf556cd55" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="post:\reservar:application\json:restaurante-system-api-config">
+        <ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[{
+  Fecha__c: payload.Fecha,
+  Hora__c: payload.Hora,
+  Personas__c: payload.Personas,
+  Tipo_pago__c: payload.Pago,
+  Anotaciones__c: payload.Anotaciones
+}]]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+		<salesforce:create type="Reservaciones__c" doc:name="Create" doc:id="0fdca168-5988-4633-9015-3ef3f696908d" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="b0723fe0-b783-430c-82ca-0470162e157e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+    </flow>
+    <flow name="post:\usuarios:application\json:restaurante-system-api-config">
+        <ee:transform doc:name="Transform Message" doc:id="b88a1329-c7f3-49f3-a097-87017742b77d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[{
+	Nombre__c : payload.Nombre,
+	Puesto__c : payload.Puesto,
+	Salario__c : payload.Salario,
+	Horario__c : payload.Horario
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create doc:name="Create" doc:id="0cc511af-a14a-49c3-b623-7bf3e5853261" config-ref="Salesforce_Config" type="Usuarios__c"/>
+		<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Usuario creado"
+}]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+    </flow>
+	<flow name="post:\admin:application\json:restaurante-system-api-config" doc:id="27dfa765-3132-410f-ad76-87d6200b4ae6" >
+		<salesforce:query doc:name="Query" doc:id="e28849cf-d323-4af9-bd6d-3f37bfbdc4b2" config-ref="Salesforce_Config" escapeSpecialCharactersForParametersValue="true">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	ID
+FROM Usuarios__c
+WHERE Contrasena__c = ':contrasena'
+AND Puesto__c = 'Admin']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	contrasena : payload.Contrasena
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="9547cea6-b988-4b2a-a29f-023fb706360e" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="d8d7a84a-acb9-479e-98ba-d2855c2d8312" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	logged : true
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="e44ff86c-2b54-4d9e-879d-6ad250f0d560" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	logged : false
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+</mule>

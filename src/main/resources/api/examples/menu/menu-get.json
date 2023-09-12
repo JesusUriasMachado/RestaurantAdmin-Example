@@ -1,0 +1,20 @@
+[
+  {
+    "nombre": "pozole",
+    "precio": 250,
+    "tiempo_de_preparacion": "15 Minutos",
+    "porciones": 2
+  },
+  {
+    "nombre": "Tosdas",
+    "precio": 150,
+    "tiempo_de_preparacion": "20 Minutos",
+    "porciones": 4
+  },
+  {
+    "nombre": "Mariscos",
+    "precio": 200,
+    "tiempo_de_preparacion": "10 Minutos",
+    "porciones": 1
+  }
+]

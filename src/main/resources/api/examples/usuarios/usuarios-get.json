@@ -1,0 +1,18 @@
+[{
+  "nombre" : "Juan Sanchez Romero",
+  "puesto" : "Mesero",
+  "salario" : "4000 quincenal",
+  "horario": "Lun-Vie Vesp"
+},
+{
+  "nombre" : "Alejandra Cortez",
+  "puesto" : "Chef",
+  "salario" : "5000 quincenal",
+  "horario": "Lun-Vie Vesp"
+},
+{
+  "nombre" : "Jose Andrade",
+  "puesto" : "Mesero",
+  "salario" : "4000 quincenal",
+  "horario": "Lun-Vie Mat"
+}]
