@@ -23,7 +23,7 @@ traits:
 
 /menu:
   description: Obtener menu
-  displayName: Obtener menu
+  displayName: Panel menu
   get:
     description: Obtener menu
     displayName: Obtener menu
@@ -107,7 +107,7 @@ traits:
 
 /reservar:
   description: Obtener reservacion
-  displayName: Obtener reservacion
+  displayName: Panel reservaciones
   get:
     description: Obtener reservacion
     displayName: Obtener reservacion
@@ -191,7 +191,7 @@ traits:
 
 /usuarios:
   description: Obtener usuarios
-  displayName: Obtener usuarios
+  displayName: Panel usuarios
   get:
     description: Obtener usuarios
     displayName: Obtener usuarios
@@ -268,13 +268,19 @@ traits:
                 "message" : "Not Found"
               }
 /admin:
-  displayName: Iniciar sesion
+  displayName: Panel Admin
   description: Iniciar sesion para el administrador
   is:
     - hasHeaders
   post:
     displayName: Iniciar sesion
     description: Iniciar sesion para el administrador
+    body:
+      application/json:
+        example: {
+          Nombre : "urias",
+          Contrasena : "urias"
+        }
     responses:
       200:
         description: OK

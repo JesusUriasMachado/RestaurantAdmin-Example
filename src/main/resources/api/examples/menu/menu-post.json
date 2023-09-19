@@ -1,6 +1,7 @@
 {
   "nombre" : "pozole",
   "precio" : 250,
-  "tiempo_de_preparacion" : "15 Minutos",
-  "porciones" : 2
+  "tiempo" : "15 Minutos",
+  "porciones" : 2,
+  "Imagen" : "https://dummyimage.com/177x100.png/dddddd/000000"
 }

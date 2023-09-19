@@ -164,14 +164,32 @@ output application/json
 			</ee:message>
 		</ee:transform>
 		<salesforce:delete doc:name="Delete" doc:id="bf973305-7923-4f83-8495-9c6b695de0fd" config-ref="Salesforce_Config"/>
-		<ee:transform doc:name="Transform Message" doc:id="b1b3b6fe-bb90-40c8-9121-a060da9798a3" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="a4013b0a-978f-4923-9365-5c6533ba3aef" >
+			<when expression='#[payload.successful == false]'>
+				<ee:transform doc:name="Transform Message" doc:id="b1b3b6fe-bb90-40c8-9121-a060da9798a3">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Ocurrio un error al eliminar el usuario. Por favor revise la informacion o intente mas tarde."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="44fdc4d6-6fda-4b71-a35d-d0a89e1d51ce" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Usuario eliminado."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
     </flow>
     <flow name="delete:\reservar\(id):restaurante-system-api-config">
 		<salesforce:query doc:name="Query" doc:id="90910175-cb3f-4590-bbff-c5140e10861c" config-ref="Salesforce_Config">
@@ -195,14 +213,32 @@ output application/java
 			</ee:message>
 		</ee:transform>
 		<salesforce:delete doc:name="Delete" doc:id="02411d38-df02-455a-a0f4-6add86d4e5a2" config-ref="Salesforce_Config"/>
-		<ee:transform doc:name="Transform Message" doc:id="af116e65-cf9d-4105-9b94-c5a7ec7b262b" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="13fb2350-0b2f-4c2f-b22a-c4051e9cee4a" >
+			<when expression='#[payload.successful == false]'>
+				<ee:transform doc:name="Transform Message" doc:id="af116e65-cf9d-4105-9b94-c5a7ec7b262b">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Ocurrio un error al eliminar la reservacion. Revise la informacion o intente mas tarde."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="198b77d1-067d-4f8e-8025-84e85e5986fe" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Reservacion eliminada."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
     </flow>
     <flow name="delete:\menu\(id):restaurante-system-api-config">
 		<salesforce:query doc:name="Query" doc:id="ec26496d-efc3-4071-890a-ef9e1965968c" config-ref="Salesforce_Config">
@@ -226,14 +262,32 @@ output application/java
 			</ee:message>
 		</ee:transform>
 		<salesforce:delete doc:name="Delete" doc:id="c591d6fa-7f6c-46ff-82e8-36a2124890f8" config-ref="Salesforce_Config"/>
-		<ee:transform doc:name="Transform Message" doc:id="9b987b24-f5a5-4796-a783-c2ce16cbbcb4" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="24479a92-5207-40de-8839-174e0de5e02c" >
+			<when expression="#[payload.successful == false]">
+				<ee:transform doc:name="Transform Message" doc:id="9b987b24-f5a5-4796-a783-c2ce16cbbcb4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Ocurrio un error al eliminar el menu. Revise la informacion o intente mas tarde."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="47a9f38f-66ea-4338-a8d2-2b9fbc2ffc00" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Menu eliminado."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
     </flow>
     <flow name="get:\menu:restaurante-system-api-config">
         <choice doc:name="Choice" doc:id="e0ad993b-c60f-4451-b7e3-62fd8ee3945b" >
@@ -243,12 +297,12 @@ payload]]></ee:set-payload>
 	ID, Nombre__c, Precio__c, Porciones__c,
 	Tiempo_de_preparacion__c, Imagen__c
 FROM Menu__c
-WHERE Nombre__c = ':nombre']]></salesforce:salesforce-query>
+WHERE Nombre__c LIKE ':nombre']]></salesforce:salesforce-query>
 					<salesforce:parameters ><![CDATA[#[%dw 2.0
 output application/java
 ---
 {
-	nombre : attributes.queryParams.nombre
+	"nombre" : '%' ++ attributes.queryParams.nombre ++ '%'
 }]]]></salesforce:parameters>
 				</salesforce:query>
 			</when>
@@ -261,14 +315,34 @@ FROM Menu__c]]></salesforce:salesforce-query>
 				</salesforce:query>
 			</otherwise>
 		</choice>
-		<ee:transform doc:name="Transform Message">
+		<choice doc:name="Choice" doc:id="d4f23c7a-8eed-4c93-84fa-7f74eedb7a20" >
+			<when expression="#[sizeOf(payload) &lt; 1]">
+				<ee:transform doc:name="Transform Message" doc:id="ffbf2ce4-37a5-431b-98f8-9dfe5fedaef8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "No se encontraron resultados."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	resultados : sizeOf(payload),
+	data : payload
+}
+]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+			</otherwise>
+		</choice>
     </flow>
     <flow name="get:\reservar:restaurante-system-api-config">
 		<choice doc:name="Choice" doc:id="f82d9c51-79eb-4858-9e75-06e576c6de16" >
@@ -294,14 +368,33 @@ FROM Reservaciones__c]]></salesforce:salesforce-query>
 				</salesforce:query>
 			</otherwise>
 		</choice>
-		<ee:transform doc:name="Transform Message">
+		<choice doc:name="Choice" doc:id="4e55c84c-4aed-49a9-9a2f-a2bde9f2ee63" >
+			<when expression="#[sizeOf(payload) &lt; 1]">
+				<ee:transform doc:name="Transform Message" doc:id="90ee2c16-ea9a-4d59-893a-713da0f086f9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "No se encontraron resultados."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	resultados : sizeOf(payload),
+	data : payload
+}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+			</otherwise>
+		</choice>
     </flow>
     <flow name="get:\usuarios:restaurante-system-api-config">
         <salesforce:query doc:name="Query" doc:id="8f36dbc8-ba92-45a0-ba8c-904414faa3dc" config-ref="Salesforce_Config">
@@ -314,7 +407,10 @@ FROM Usuarios__c]]></salesforce:salesforce-query>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	resultados : sizeOf(payload),
+	data : payload
+}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
@@ -407,11 +503,12 @@ output application/json
 	ID
 FROM Usuarios__c
 WHERE Contrasena__c = ':contrasena'
-AND Puesto__c = 'Admin']]></salesforce:salesforce-query>
+AND Nombre__c = ':nombre']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[%dw 2.0
 output application/java
 ---
 {
+	nombre : payload.Nombre,
 	contrasena : payload.Contrasena
 }]]]></salesforce:parameters>
 		</salesforce:query>
