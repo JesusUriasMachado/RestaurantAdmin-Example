@@ -8,18 +8,8 @@ securitySchemes:
 protocols: [http]
 securedBy: [basic]
 traits:
-  hasHeaders:
-    headers:
-      client_id:
-        description: Llave del cliente
-        required: true
-        displayName: Llave del cliente
-        type: string
-      client_secret:
-        description: Llave secreta del cliente
-        required: true
-        displayName: Llave secreta del cliente
-        type: string
+  hasHeaders: !include traits/hasHeaders.raml
+  responses : !include traits/responses.raml
 
 /menu:
   description: Obtener menu
@@ -34,26 +24,14 @@ traits:
         description: Permite filtrar el menu
     is:
       - hasHeaders
+      - responses
     responses:
       200:
         description: OK
         body:
           application/json:
             example: !include examples/menu/menu-get.json
-      400:
-        description: BAD REQUEST
-        body:
-          application/json:
-            example: {
-              "message" : "Bad Request"
-            }
-      404:
-        description: NOT FOUND
-        body:
-          application/json:
-            example: {
-              "message" : "Not Found"
-            }
+    
   post:
     description: Crear menu
     displayName: Crear menu
@@ -63,32 +41,21 @@ traits:
         example: !include examples/datatype/menu-post.json
     is:
       - hasHeaders
+      - responses
     responses:
       201:
         description: CREATED
         body:
           application/json:
             example: !include examples/menu/menu-post.json
-      400:
-        description: BAD REQUEST
-        body:
-          application/json:
-            example: {
-              "message" : "Bad Request"
-            }
-      404:
-        description: NOT FOUND
-        body:
-          application/json:
-            example: {
-              "message" : "Not Found"
-            }
+  
   /{id}:
     delete:
       description: Elimina menus
       displayName: Eliminar menu
       is:
         - hasHeaders
+        - responses
       responses:
         200:
           description: OK
@@ -96,13 +63,6 @@ traits:
             application/json:
               example: {
                 "message" : "Eliminado"
-              }
-        404:
-          description: NOT FOUND
-          body:
-            application/json:
-              example: {
-                "message" : "Not Found"
               }
 
 /reservar:
@@ -118,26 +78,13 @@ traits:
         description: Permite filtrar las reservaciones
     is:
       - hasHeaders
+      - responses
     responses:
       200:
         description: OK
         body:
           application/json:
             example: !include examples/reservar/reservar-get.json
-      400:
-        description: BAD REQUEST
-        body:
-          application/json:
-            example: {
-              "message" : "Bad Request"
-            }
-      404:
-        description: NOT FOUND
-        body:
-          application/json:
-            example: {
-              "message" : "Not Found"
-            }
   post:
     description: Crear reservacion
     displayName: Crear reservacion
@@ -147,32 +94,20 @@ traits:
         example: !include examples/datatype/reservar-post.json
     is:
       - hasHeaders
+      - responses
     responses:
       201:
         description: CREATED
         body:
           application/json:
             example: !include examples/reservar/reservar-post.json
-      400:
-        description: BAD REQUEST
-        body:
-          application/json:
-            example: {
-              "message" : "Bad Request"
-            }
-      404:
-        description: NOT FOUND
-        body:
-          application/json:
-            example: {
-              "message" : "Not Found"
-            }
   /{id}:
     delete:
       description: Elimina reservaciones
       displayName: Eliminar reservacion
       is:
         - hasHeaders
+        - responses
       responses:
         200:
           description: OK
@@ -180,13 +115,6 @@ traits:
             application/json:
               example: {
                 "message" : "Eliminado"
-              }
-        404:
-          description: NOT FOUND
-          body:
-            application/json:
-              example: {
-                "message" : "Not Found"
               }
 
 /usuarios:
@@ -197,26 +125,13 @@ traits:
     displayName: Obtener usuarios
     is:
       - hasHeaders
+      - responses
     responses:
       200:
         description: OK
         body:
           application/json:
             example: !include examples/usuarios/usuarios-get.json
-      400:
-        description: BAD REQUEST
-        body:
-          application/json:
-            example: {
-              "message" : "Bad Request"
-            }
-      404:
-        description: NOT FOUND
-        body:
-          application/json:
-            example: {
-              "message" : "Not Found"
-            }
   post:
     description: Crear usuarios
     displayName: Crear usuarios
@@ -226,32 +141,20 @@ traits:
         example: !include examples/datatype/usuarios-post.json
     is:
       - hasHeaders
+      - responses
     responses:
       201:
         description: CREATED
         body:
           application/json:
             example: !include examples/usuarios/usuarios-post.json
-      400:
-        description: BAD REQUEST
-        body:
-          application/json:
-            example: {
-              "message" : "Bad Request"
-            }
-      404:
-        description: NOT FOUND
-        body:
-          application/json:
-            example: {
-              "message" : "Not Found"
-            }
   /{id}:
     delete:
       description: Elimina usuarios
       displayName: Eliminar usuarios
       is:
         - hasHeaders
+        - responses
       responses:
         200:
           description: OK
@@ -260,18 +163,13 @@ traits:
               example: {
                 "message" : "Eliminado"
               }
-        404:
-          description: NOT FOUND
-          body:
-            application/json:
-              example: {
-                "message" : "Not Found"
-              }
+
 /admin:
   displayName: Panel Admin
   description: Iniciar sesion para el administrador
   is:
     - hasHeaders
+    - responses
   post:
     displayName: Iniciar sesion
     description: Iniciar sesion para el administrador
@@ -288,11 +186,4 @@ traits:
           application/json:
             example: {
               "logged" : true
-            }
-      404:
-        description: NOT FOUND
-        body:
-          application/json:
-            example: {
-              "logged" : false
             }
