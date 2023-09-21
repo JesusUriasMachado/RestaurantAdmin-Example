@@ -437,9 +437,7 @@ output application/json
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-{
-	message : "Menu creado."
-}]]></ee:set-payload>
+payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
     </flow>
@@ -465,9 +463,7 @@ output application/json
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-{
-	message : "Reservacion creada."
-}]]></ee:set-payload>
+payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
     </flow>
@@ -481,7 +477,8 @@ output application/json
 	Nombre__c : payload.Nombre,
 	Puesto__c : payload.Puesto,
 	Salario__c : payload.Salario,
-	Horario__c : payload.Horario
+	Horario__c : payload.Horario,
+	Contrasena__c : payload.Contrasena
 }]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
@@ -491,9 +488,7 @@ output application/json
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{
-	message : "Usuario creado"
-}]]></ee:set-payload>
+payload]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
