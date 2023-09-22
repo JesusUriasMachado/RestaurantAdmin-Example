@@ -12,7 +12,7 @@ traits:
   responses : !include traits/responses.raml
 
 /menu:
-  description: Obtener menu
+  description: Se usa para obtener el menu
   displayName: Panel menu
   get:
     description: Obtener menu
@@ -33,7 +33,7 @@ traits:
             example: !include examples/menu/menu-get.json
     
   post:
-    description: Crear menu
+    description: Se usa para crear un menu
     displayName: Crear menu
     body:
       application/json:
@@ -51,7 +51,7 @@ traits:
   
   /{id}:
     delete:
-      description: Elimina menus
+      description: Se usa para eliminar un menu
       displayName: Eliminar menu
       is:
         - hasHeaders
@@ -64,9 +64,28 @@ traits:
               example: {
                 "message" : "Eliminado"
               }
+    put:
+      description: Se usa para actualizar un menu
+      displayName: Actualizar menu
+      is:
+        - hasHeaders
+        - responses
+      body:
+        application/json:
+          type: !include examples/datatype/menu-dataType.raml
+          example: !include examples/datatype/menu-post.json
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: {
+                message : "OK"
+              }
+
 
 /reservar:
-  description: Obtener reservacion
+  description: Se usa para obtener las reservaciones
   displayName: Panel reservaciones
   get:
     description: Obtener reservacion
@@ -86,7 +105,7 @@ traits:
           application/json:
             example: !include examples/reservar/reservar-get.json
   post:
-    description: Crear reservacion
+    description: Se usa para crear reservaciones
     displayName: Crear reservacion
     body:
       application/json:
@@ -103,7 +122,7 @@ traits:
             example: !include examples/reservar/reservar-post.json
   /{id}:
     delete:
-      description: Elimina reservaciones
+      description: Se usa para eliminar reservaciones
       displayName: Eliminar reservacion
       is:
         - hasHeaders
@@ -118,7 +137,7 @@ traits:
               }
 
 /usuarios:
-  description: Obtener usuarios
+  description: Se usa para obtener usuarios
   displayName: Panel usuarios
   get:
     description: Obtener usuarios
@@ -133,7 +152,7 @@ traits:
           application/json:
             example: !include examples/usuarios/usuarios-get.json
   post:
-    description: Crear usuarios
+    description: Se usa para crear un usuario
     displayName: Crear usuarios
     body:
       application/json:
@@ -150,7 +169,7 @@ traits:
             example: !include examples/usuarios/usuarios-post.json
   /{id}:
     delete:
-      description: Elimina usuarios
+      description: Se usa para eliminar un usuario
       displayName: Eliminar usuarios
       is:
         - hasHeaders
@@ -164,15 +183,15 @@ traits:
                 "message" : "Eliminado"
               }
 
-/admin:
-  displayName: Panel Admin
-  description: Iniciar sesion para el administrador
+/login:
+  displayName: Panel Login
+  description: Iniciar sesion para usuarios
   is:
     - hasHeaders
     - responses
   post:
     displayName: Iniciar sesion
-    description: Iniciar sesion para el administrador
+    description: Se usa para iniciar sesion
     body:
       application/json:
         example: {
@@ -185,5 +204,69 @@ traits:
         body:
           application/json:
             example: {
-              "logged" : true
+              "logged" : true,
+              "rol" : "Admin"
             }
+
+/ordenes:
+  displayName: Panel ordenes
+  description: Se usa para obtener las ordenes
+  get:
+    displayName: Obtener ordenes
+    description: se usa para obtener las ordenes activas de los clientes
+    is:
+      - hasHeaders
+      - responses
+    queryParameters:
+      activas:
+        description: Si se desactiva muestra todas las ordenes, incluyendo las inactivas
+        displayName: Mostrar inactivas?
+        type: string
+        required: false
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/ordenes/ordenes.json
+  post:
+    description: Se usa para crear ordenes
+    displayName: Crear Orden de compra
+    is:
+      - hasHeaders
+      - responses
+    body:
+      application/json:
+        type: !include examples/datatype/ordenes-dataType.raml
+        example: !include examples/datatype/ordenes.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: {
+              message : "Orden creada"
+            }
+  /{id}:
+    patch:
+      description: Se usa para cambiar el estado de una orden
+      displayName: Cambiar estado de orden
+      is:
+        - hasHeaders
+        - responses
+      body:
+        application/json:
+          type: object
+          properties:
+            Estado:
+              type: string
+              required: true
+          example: {
+            "Estado" : "Entregado"
+          }
+      responses:
+        201:
+          description: CREATED
+          body:
+            application/json:
+              example: {
+                message : "Estado actualizado."
+              }

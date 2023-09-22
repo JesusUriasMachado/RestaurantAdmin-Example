@@ -142,7 +142,55 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="delete:\usuarios\(id):restaurante-system-api-config">
+    <flow name="patch:\ordenes\(id):restaurante-system-api-config" doc:id="18c81898-4488-4b36-b888-ac0d9d8344cc" >
+		<ee:transform doc:name="Transform Message" doc:id="e23a58ad-1fd2-41c0-a725-c9471e50050d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Id: attributes.uriParams.id,
+	Estado__c : payload.Estado
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:update type="Ordenes__c" doc:name="Update" doc:id="41f32710-30aa-461a-ac60-1a4c54308d25" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="585ad149-014e-4b2c-a640-d9a86328dcd6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="put:\menu\(id):restaurante-system-api-config" doc:id="4e9178a6-8e91-4d13-a14c-f39d7bb94161" >
+		<ee:transform doc:name="Transform Message" doc:id="f8f6dc24-f16e-4d83-9dbb-70d87eee61df" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	Id: attributes.uriParams.id,
+	Nombre__c: payload.Nombre,
+	Precio__c: payload.Precio,
+	Porciones__c: payload.Porciones,
+	Tiempo_de_preparacion__c: payload.Tiempo,
+	Imagen__c: payload.Imagen
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:update type="Menu__c" doc:name="Update" doc:id="64ed2ef9-96a8-4ab2-adf4-add2f830c0cf" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="cd311599-5a3c-4eeb-b47e-870a220bc80f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+	<flow name="delete:\usuarios\(id):restaurante-system-api-config">
         <salesforce:query doc:name="Query" doc:id="db3cfb88-1c05-47e3-a5fa-f912e75d963a" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT
 	ID
@@ -344,7 +392,55 @@ output application/json
 			</otherwise>
 		</choice>
     </flow>
-    <flow name="get:\reservar:restaurante-system-api-config">
+	<flow name="get:\ordenes:restaurante-system-api-config" doc:id="c9c43944-3d45-4e19-b48c-17f94b82bca4" >
+		<choice doc:name="Choice" doc:id="d524a3e2-1c1e-40de-a1d3-fb8173976ec4" >
+			<when expression='#[attributes.queryParams.activas == "true"]'>
+				<salesforce:query doc:name="Query" doc:id="6c68b11e-90f1-4e4a-958f-35ad1dff9db4" config-ref="Salesforce_Config">
+					<salesforce:salesforce-query ><![CDATA[SELECT
+	ID, ClienteId__c, Total__c, Tipo_pago__c, Tipo_entrega__c,
+	Celular__c, Productos__c, Estado__c
+FROM Ordenes__c
+WHERE Estado__c = 'Activa']]></salesforce:salesforce-query>
+				</salesforce:query>
+			</when>
+			<otherwise >
+				<salesforce:query doc:name="Query" doc:id="56a08239-a68d-439f-90f2-c5ac5cd0131b" config-ref="Salesforce_Config">
+					<salesforce:salesforce-query ><![CDATA[SELECT
+	ID, ClienteId__c, Total__c, Tipo_pago__c, Tipo_entrega__c,
+	Celular__c, Productos__c, Estado__c
+FROM Ordenes__c]]></salesforce:salesforce-query>
+				</salesforce:query>
+			</otherwise>
+		</choice>
+		<choice doc:name="Choice" doc:id="331b5b32-fc72-4b13-90be-f767d3d5d5c7" >
+			<when expression="#[sizeOf(payload) &lt; 1]">
+				<ee:transform doc:name="Transform Message" doc:id="5ddb7399-1369-431d-b94f-f99437cf7bc8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "No se encontraron resultados."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="71a16f94-1ee4-4416-8ddd-50440d07c70f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	resultados : sizeOf(payload),
+	data : payload
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="get:\reservar:restaurante-system-api-config">
 		<choice doc:name="Choice" doc:id="f82d9c51-79eb-4858-9e75-06e576c6de16" >
 			<when expression="#[attributes.queryParams.fecha?]" >
 				<salesforce:query doc:name="Query" doc:id="4619f18a-a029-448f-b272-920bf6310e4d" config-ref="Salesforce_Config" >
@@ -467,6 +563,33 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
     </flow>
+	<flow name="post:\ordenes:application\json:restaurante-system-api-config" doc:id="c0d42eec-2aab-46b6-aa5a-bd8f0ddd9232" >
+		<ee:transform doc:name="Transform Message" doc:id="4de023f8-e45a-4421-8233-c1b236e410f2" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	ClienteId__c : payload.ClienteId,
+	Total__c : payload.Total,
+	Tipo_pago__c : payload.Tipo_pago,
+	Tipo_entrega__c : payload.Tipo_entrega,
+	Celular__c : payload.Celular default "",
+	Productos__c : payload.Productos,
+	Estado__c : "Activa"
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create type="Ordenes__c" doc:name="Create" doc:id="ce542a24-15dd-47d5-9416-7eb2c68b3752" config-ref="Salesforce_Config"/>
+		<ee:transform doc:name="Transform Message" doc:id="af2b2df5-b56b-44ff-86de-b44eb79b0553" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<flow name="post:\usuarios:application\json:restaurante-system-api-config">
         <ee:transform doc:name="Transform Message" doc:id="b88a1329-c7f3-49f3-a097-87017742b77d" >
 			<ee:message >
@@ -492,10 +615,10 @@ payload]]></ee:set-payload>
             </ee:message>
         </ee:transform>
     </flow>
-	<flow name="post:\admin:application\json:restaurante-system-api-config" doc:id="27dfa765-3132-410f-ad76-87d6200b4ae6" >
+	<flow name="post:\login:application\json:restaurante-system-api-config" doc:id="27dfa765-3132-410f-ad76-87d6200b4ae6" >
 		<salesforce:query doc:name="Query" doc:id="e28849cf-d323-4af9-bd6d-3f37bfbdc4b2" config-ref="Salesforce_Config" escapeSpecialCharactersForParametersValue="true">
 			<salesforce:salesforce-query ><![CDATA[SELECT
-	ID
+	ID, Puesto__c
 FROM Usuarios__c
 WHERE Contrasena__c = ':contrasena'
 AND Nombre__c = ':nombre']]></salesforce:salesforce-query>
@@ -515,7 +638,8 @@ output application/java
 output application/json
 ---
 {
-	logged : true
+	logged : true,
+	Puesto : payload.Puesto__c
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
