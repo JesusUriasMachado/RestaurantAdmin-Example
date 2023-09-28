@@ -85,7 +85,7 @@ traits:
 
 
 /reservar:
-  description: Se usa para obtener las reservaciones
+  description: Se usa para administrar las reservaciones
   displayName: Panel reservaciones
   get:
     description: Obtener reservacion
@@ -137,7 +137,7 @@ traits:
               }
 
 /usuarios:
-  description: Se usa para obtener usuarios
+  description: Se usa para administrar usuarios
   displayName: Panel usuarios
   get:
     description: Obtener usuarios
@@ -210,7 +210,7 @@ traits:
 
 /ordenes:
   displayName: Panel ordenes
-  description: Se usa para obtener las ordenes
+  description: Se usa para administrar las ordenes
   get:
     displayName: Obtener ordenes
     description: se usa para obtener las ordenes activas de los clientes
@@ -270,3 +270,50 @@ traits:
               example: {
                 message : "Estado actualizado."
               }
+/kart:
+  description: Se usa para administrar los carritos
+  displayName: Panel Karts
+  post:
+    displayName: Crear Carrito
+    description: Se usa para insertar productos en el carrito
+    is:
+      - hasHeaders
+      - responses
+    body:
+      application/json:
+        type: !include examples/datatype/kart-dataType.raml
+        example: !include examples/datatype/kart-post.json
+    responses:
+      201:
+        description: CREATED
+        body:
+          application/json:
+            example: !include examples/kart/kart-post.json
+  /{id}:
+    get:
+      description: Se usa para obtener los carritos de un usuario
+      displayName: Obtener Karts
+      is:
+        - hasHeaders
+        - responses
+      responses:
+        200:
+          description: OK
+          body:
+            application/json:
+              example: !include examples/kart/kart-get.json
+    /{idP}:
+      delete:
+        displayName: Eliminar Carrito
+        description: Se usa para eliminar un producto del carrito de un cliente
+        is:
+          - hasHeaders
+          - responses
+        responses:
+          200:
+            description: OK
+            body:
+              application/json:
+                example: {
+                  message : "Eliminado del carrito"
+                }

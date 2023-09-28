@@ -1,6 +1,8 @@
 {
-  "nombre" : "Juan Sanchez Romero",
-  "puesto" : "Mesero",
-  "salario" : "4000 quincenal",
-  "horario": "Lun-Vie Vesp"
+  "Nombre" : "Juan Sanchez Romero",
+  "Rol" : "Mesero",
+  "Correo" : "correo@correo.com",
+  "Direccion" : "AV. Jalisco y 59",
+  "Contrasena" : "contrasena123",
+  "Celular" : "123123123"
 }

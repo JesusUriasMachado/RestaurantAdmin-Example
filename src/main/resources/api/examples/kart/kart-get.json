@@ -1,0 +1,20 @@
+[
+  {
+    "Id": "123123123",
+    "IdUsuario": "123abc",
+    "IdProducto": "321cba",
+    "Precio": 123
+  },
+  {
+    "Id": "123123123",
+    "IdUsuario": "123abc",
+    "IdProducto": "321cba",
+    "Precio": 123
+  },
+  {
+    "Id": "123123123",
+    "IdUsuario": "123abc",
+    "IdProducto": "321cba",
+    "Precio": 123
+  }
+]

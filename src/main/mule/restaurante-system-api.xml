@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
 http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
-http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd">
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
     <http:listener-config name="restaurante-system-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="${secure::http.port}" protocol="HTTPS" tlsContext="TLS_Context"/>
     </http:listener-config>
@@ -239,7 +240,57 @@ output application/json
 			</otherwise>
 		</choice>
     </flow>
-    <flow name="delete:\reservar\(id):restaurante-system-api-config">
+    <flow name="delete:\kart\(id)\(idP):restaurante-system-api-config" doc:id="572cd0db-765a-4f82-bf7f-3648cb053d0c" >
+		<salesforce:query doc:name="Query" doc:id="0140d3dc-3690-49d5-b800-047dcf02b206" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	ID
+FROM Kart__c
+WHERE IdProducto__c = ':idP']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	idP : attributes.uriParams.idP
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="2019d315-a5d8-4702-b07f-95d83620ee69" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[payload[0].Id]
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:delete doc:name="Delete" doc:id="fcc770e7-25cb-4687-961b-cdc6693a0be3" config-ref="Salesforce_Config"/>
+		<choice doc:name="Choice" doc:id="fba338e5-53ff-431b-b365-5750c1115154" >
+			<when expression="#[payload.successful == false]">
+				<ee:transform doc:name="Transform Message" doc:id="398a490e-9762-469d-a7b9-6efd4852262a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Ocurrio un error al eliminar el producto.
+	Revise la informacion o intente mas tarde."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="2a2e5ff6-5a04-444b-bc93-44d697ab197e" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Producto eliminado del carrito."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="delete:\reservar\(id):restaurante-system-api-config">
 		<salesforce:query doc:name="Query" doc:id="90910175-cb3f-4590-bbff-c5140e10861c" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT
 	ID
@@ -440,6 +491,30 @@ output application/json
 			</otherwise>
 		</choice>
 	</flow>
+	<flow name="get:\kart\(id):restaurante-system-api-config" doc:id="ce62fbd0-ca51-465e-bf86-a345b32a37e5" >
+		<salesforce:query doc:name="Query" doc:id="3cd87b7b-d7c1-4c0a-a6c6-33045ca65bca" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	IdProducto__c, Precio__c
+FROM Kart__c
+WHERE IdUsuario__c = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	id : attributes.uriParams.id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<ee:transform doc:name="Transform Message" doc:id="43c62f94-2b29-4e7e-80c2-b05464bd6b6b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	resultados : sizeOf(payload),
+	data : payload
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<flow name="get:\reservar:restaurante-system-api-config">
 		<choice doc:name="Choice" doc:id="f82d9c51-79eb-4858-9e75-06e576c6de16" >
 			<when expression="#[attributes.queryParams.fecha?]" >
@@ -495,7 +570,7 @@ output application/json
     <flow name="get:\usuarios:restaurante-system-api-config">
         <salesforce:query doc:name="Query" doc:id="8f36dbc8-ba92-45a0-ba8c-904414faa3dc" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, Nombre__c, Puesto__c, Salario__c, Horario__c
+	ID, Nombre__c, Rol__c, Correo__c, Direccion__c, Celular__c
 FROM Usuarios__c]]></salesforce:salesforce-query>
 		</salesforce:query>
 		<ee:transform doc:name="Transform Message">
@@ -563,6 +638,29 @@ payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
     </flow>
+	<flow name="post:\kart:application\json:restaurante-system-api-config" doc:id="70278d8c-f218-48ed-b859-887aa826aba9" >
+		<ee:transform doc:name="Transform Message" doc:id="8e59f4af-5a1d-459a-9cbb-5ad9735610db" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	IdUsuario__c: payload.IdUsuario,
+	IdProducto__c: payload.IdProducto,
+	Precio__c: payload.Precio
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create doc:name="Create" doc:id="ed4067bc-9abd-4412-b300-6cdc2bf64470" config-ref="Salesforce_Config" type="Kart__c"/>
+		<ee:transform doc:name="Transform Message" doc:id="e68f189b-25cc-4431-80f4-d664280b8c1c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
 	<flow name="post:\ordenes:application\json:restaurante-system-api-config" doc:id="c0d42eec-2aab-46b6-aa5a-bd8f0ddd9232" >
 		<ee:transform doc:name="Transform Message" doc:id="4de023f8-e45a-4421-8233-c1b236e410f2" >
 			<ee:message >
@@ -598,10 +696,11 @@ output application/json
 ---
 [{
 	Nombre__c : payload.Nombre,
-	Puesto__c : payload.Puesto,
-	Salario__c : payload.Salario,
-	Horario__c : payload.Horario,
-	Contrasena__c : payload.Contrasena
+	Rol__c : "Cliente",
+	Direccion__c : payload.Direccion,
+	Correo__c : payload.Correo,
+	Contrasena__c : payload.Contrasena,
+	Celular__c : payload.Celular
 }]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
@@ -618,15 +717,15 @@ payload]]></ee:set-payload>
 	<flow name="post:\login:application\json:restaurante-system-api-config" doc:id="27dfa765-3132-410f-ad76-87d6200b4ae6" >
 		<salesforce:query doc:name="Query" doc:id="e28849cf-d323-4af9-bd6d-3f37bfbdc4b2" config-ref="Salesforce_Config" escapeSpecialCharactersForParametersValue="true">
 			<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, Puesto__c
+	ID, Correo__c, Rol__c
 FROM Usuarios__c
 WHERE Contrasena__c = ':contrasena'
-AND Nombre__c = ':nombre']]></salesforce:salesforce-query>
+AND Correo__c = ':correo']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[%dw 2.0
 output application/java
 ---
 {
-	nombre : payload.Nombre,
+	correo : payload.Correo,
 	contrasena : payload.Contrasena
 }]]]></salesforce:parameters>
 		</salesforce:query>
@@ -639,7 +738,7 @@ output application/json
 ---
 {
 	logged : true,
-	Puesto : payload.Puesto__c
+	Rol : payload.Rol__c
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
