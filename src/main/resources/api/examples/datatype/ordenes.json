@@ -1,8 +1,9 @@
 {
-  "ClienteId" : "123abc",
-  "Total" : 550,
-  "Tipo_pago" : "Efectivo",
-  "Tipo_entrega" : "Sucursal",
-  "Celular" : "65312312312",
-  "Productos" : "Sushi, soda"
+  "ClienteId": "123abc",
+  "Total": 550,
+  "Tipo_pago": "Efectivo",
+  "Tipo_entrega": "Sucursal",
+  "Celular": "65312312312",
+  "Productos": "Sushi, soda",
+  "Direccion": "Jalisco y 59"
 }

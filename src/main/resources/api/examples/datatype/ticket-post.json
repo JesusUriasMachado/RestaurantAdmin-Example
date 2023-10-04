@@ -1,0 +1,8 @@
+{
+  "OrderId" : "123123",
+  "PayerId" : "123123",
+  "Email" : "urias@correo.com",
+  "CountryCode" : "653",
+  "Amount" : "100",
+  "Currency" : "MX"
+}

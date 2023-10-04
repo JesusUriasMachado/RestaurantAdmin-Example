@@ -220,7 +220,7 @@ traits:
     queryParameters:
       activas:
         description: Si se desactiva muestra todas las ordenes, incluyendo las inactivas
-        displayName: Mostrar inactivas?
+        displayName: Mostrar activas?
         type: string
         required: false
     responses:
@@ -317,3 +317,23 @@ traits:
                 example: {
                   message : "Eliminado del carrito"
                 }
+
+/ticket:
+  displayName: Panel Tickets
+  description: Se usa para administrar los tickets
+  post:
+    displayName: Crear Tickets
+    description: Se usa para crear tickets
+    is:
+      - hasHeaders
+      - responses
+    body:
+      application/json:
+        type: !include examples/datatype/ticket-dataType.raml
+        example: !include examples/datatype/ticket-post.json
+    responses:
+      201:
+        description: CREATED
+        body:
+          application/json:
+            example: !include examples/tickets/tickets-post.json

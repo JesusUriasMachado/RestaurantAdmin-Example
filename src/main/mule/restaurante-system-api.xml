@@ -67,10 +67,12 @@ output application/json
                         <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-{message: "Method not allowed"}]]></ee:set-payload>
+{message: "Method not allowed",
+	details : error.description
+}]]></ee:set-payload>
                     </ee:message>
                     <ee:variables>
-                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                        <ee:set-variable variableName="httpStatus"><![CDATA[405]]></ee:set-variable>
                     </ee:variables>
                 </ee:transform>
             </on-error-propagate>
@@ -156,14 +158,38 @@ output application/java
 			</ee:message>
 		</ee:transform>
 		<salesforce:update type="Ordenes__c" doc:name="Update" doc:id="41f32710-30aa-461a-ac60-1a4c54308d25" config-ref="Salesforce_Config"/>
-		<ee:transform doc:name="Transform Message" doc:id="585ad149-014e-4b2c-a640-d9a86328dcd6" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="42c413ba-ef76-4413-82a9-5db9dc54fdc9" >
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="f28eb187-6df4-4c83-8f76-f2ada5cef3c7" type="MULE:EXPRESSION"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="585ad149-014e-4b2c-a640-d9a86328dcd6">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Orden actualizada."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="df3005e2-01ef-498f-81eb-c4bf3a598847" >
+				<ee:transform doc:name="Transform Message" doc:id="64c452f1-2a64-4a74-b6ff-59d2be4652f7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="put:\menu\(id):restaurante-system-api-config" doc:id="4e9178a6-8e91-4d13-a14c-f39d7bb94161" >
 		<ee:transform doc:name="Transform Message" doc:id="f8f6dc24-f16e-4d83-9dbb-70d87eee61df" >
@@ -182,14 +208,38 @@ output application/java
 			</ee:message>
 		</ee:transform>
 		<salesforce:update type="Menu__c" doc:name="Update" doc:id="64ed2ef9-96a8-4ab2-adf4-add2f830c0cf" config-ref="Salesforce_Config"/>
-		<ee:transform doc:name="Transform Message" doc:id="cd311599-5a3c-4eeb-b47e-870a220bc80f" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="eda48c2a-7a23-4ed0-9b55-5de615759fee" >
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="3ddef6f1-56b9-4c71-863c-f12b51a48e14" type="MULE:EXPRESSION"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="cd311599-5a3c-4eeb-b47e-870a220bc80f">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Menu actualizado."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="895461d8-1148-4aa7-ab64-6431c1661492" >
+				<ee:transform doc:name="Transform Message" doc:id="cb1d5c37-5684-4eb0-8673-171a6ed38b50" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="delete:\usuarios\(id):restaurante-system-api-config">
         <salesforce:query doc:name="Query" doc:id="db3cfb88-1c05-47e3-a5fa-f912e75d963a" config-ref="Salesforce_Config">
@@ -214,17 +264,8 @@ output application/json
 		</ee:transform>
 		<salesforce:delete doc:name="Delete" doc:id="bf973305-7923-4f83-8495-9c6b695de0fd" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="a4013b0a-978f-4923-9365-5c6533ba3aef" >
-			<when expression='#[payload.successful == false]'>
-				<ee:transform doc:name="Transform Message" doc:id="b1b3b6fe-bb90-40c8-9121-a060da9798a3">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error al eliminar el usuario. Por favor revise la informacion o intente mas tarde."
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="e2a6983f-c23c-48f6-b92d-a1d56d0672b0" type="MULE:EXPRESSION"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Transform Message" doc:id="44fdc4d6-6fda-4b71-a35d-d0a89e1d51ce" >
@@ -239,6 +280,21 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2c3bb711-9fe0-4605-9979-151e67ad046a" >
+				<ee:transform doc:name="Transform Message" doc:id="09f76861-7101-4fbe-a38c-27ad2cf90241" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
     <flow name="delete:\kart\(id)\(idP):restaurante-system-api-config" doc:id="572cd0db-765a-4f82-bf7f-3648cb053d0c" >
 		<salesforce:query doc:name="Query" doc:id="0140d3dc-3690-49d5-b800-047dcf02b206" config-ref="Salesforce_Config">
@@ -264,17 +320,7 @@ output application/java
 		<salesforce:delete doc:name="Delete" doc:id="fcc770e7-25cb-4687-961b-cdc6693a0be3" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="fba338e5-53ff-431b-b365-5750c1115154" >
 			<when expression="#[payload.successful == false]">
-				<ee:transform doc:name="Transform Message" doc:id="398a490e-9762-469d-a7b9-6efd4852262a" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message: "Ocurrio un error al eliminar el producto.
-	Revise la informacion o intente mas tarde."
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
+				<raise-error doc:name="Raise error" doc:id="df771d1f-e579-4d57-ac6e-38dd3a5e7f29" type="MULE:EXPRESSION"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Transform Message" doc:id="2a2e5ff6-5a04-444b-bc93-44d697ab197e" >
@@ -284,11 +330,26 @@ output application/json
 ---
 {
 	message : "Producto eliminado del carrito."
-}]]></ee:set-payload>
+	}]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</otherwise>
 		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b62e6b97-d994-4d7a-bbe4-3827fec017f4" >
+				<ee:transform doc:name="Transform Message" doc:id="0adbb3c8-6b61-4af5-a65f-f4ff203e7500" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="delete:\reservar\(id):restaurante-system-api-config">
 		<salesforce:query doc:name="Query" doc:id="90910175-cb3f-4590-bbff-c5140e10861c" config-ref="Salesforce_Config">
@@ -314,16 +375,7 @@ output application/java
 		<salesforce:delete doc:name="Delete" doc:id="02411d38-df02-455a-a0f4-6add86d4e5a2" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="13fb2350-0b2f-4c2f-b22a-c4051e9cee4a" >
 			<when expression='#[payload.successful == false]'>
-				<ee:transform doc:name="Transform Message" doc:id="af116e65-cf9d-4105-9b94-c5a7ec7b262b">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error al eliminar la reservacion. Revise la informacion o intente mas tarde."
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+				<raise-error doc:name="Raise error" doc:id="37440165-044f-4504-86f7-4041d939e129" type="MULE:EXPRESSION"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Transform Message" doc:id="198b77d1-067d-4f8e-8025-84e85e5986fe" >
@@ -338,6 +390,21 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f6f088f9-3827-4d7b-8152-5af229a0e1dd" >
+				<ee:transform doc:name="Transform Message" doc:id="af116e65-cf9d-4105-9b94-c5a7ec7b262b">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
     <flow name="delete:\menu\(id):restaurante-system-api-config">
 		<salesforce:query doc:name="Query" doc:id="ec26496d-efc3-4071-890a-ef9e1965968c" config-ref="Salesforce_Config">
@@ -363,16 +430,7 @@ output application/java
 		<salesforce:delete doc:name="Delete" doc:id="c591d6fa-7f6c-46ff-82e8-36a2124890f8" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="24479a92-5207-40de-8839-174e0de5e02c" >
 			<when expression="#[payload.successful == false]">
-				<ee:transform doc:name="Transform Message" doc:id="9b987b24-f5a5-4796-a783-c2ce16cbbcb4">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error al eliminar el menu. Revise la informacion o intente mas tarde."
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+				<raise-error doc:name="Raise error" doc:id="0f3d4470-3f55-4d12-b9f7-58b33340eb17" type="MULE:EXPRESSION"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Transform Message" doc:id="47a9f38f-66ea-4338-a8d2-2b9fbc2ffc00" >
@@ -387,6 +445,21 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3e97b168-b499-4ece-9d96-ed019e0925d7" >
+				<ee:transform doc:name="Transform Message" doc:id="9b987b24-f5a5-4796-a783-c2ce16cbbcb4">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
     <flow name="get:\menu:restaurante-system-api-config">
         <choice doc:name="Choice" doc:id="e0ad993b-c60f-4451-b7e3-62fd8ee3945b" >
@@ -503,9 +576,23 @@ WHERE IdUsuario__c = ':id']]></salesforce:salesforce-query>
 	id : attributes.uriParams.id
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<ee:transform doc:name="Transform Message" doc:id="43c62f94-2b29-4e7e-80c2-b05464bd6b6b" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="fa4da4e4-2349-4cec-9485-5dffe3264ba9" >
+			<when expression="#[sizeOf(payload) &lt; 1]">
+				<ee:transform doc:name="Transform Message" doc:id="c28feeff-a463-4394-8858-259d036419b7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "No se encontraron elementos en el carrito"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="43c62f94-2b29-4e7e-80c2-b05464bd6b6b">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -514,6 +601,8 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
 	</flow>
 	<flow name="get:\reservar:restaurante-system-api-config">
 		<choice doc:name="Choice" doc:id="f82d9c51-79eb-4858-9e75-06e576c6de16" >
@@ -603,14 +692,38 @@ output application/json
             </ee:message>
         </ee:transform>
 		<salesforce:create doc:name="Create" doc:id="d5cf6907-6b2d-4a4d-b4fa-cd86723b8d8e" config-ref="Salesforce_Config" type="Menu__c"/>
-		<ee:transform doc:name="Transform Message" doc:id="83c12d46-533b-4320-bc44-d6ebf556cd55" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="30fb1af4-bb2b-45eb-bcc7-94ee2b984534" >
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="aaec384b-6211-412c-9d33-f02e119282a7" type="MULE:EXPRESSION"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="83c12d46-533b-4320-bc44-d6ebf556cd55">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Menu creado."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="77431ff9-0984-4e24-8293-1edd66f5e5ca" >
+				<ee:transform doc:name="Transform Message" doc:id="20b48f77-1ee4-4f1a-ae40-e7fc67069430" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
     <flow name="post:\reservar:application\json:restaurante-system-api-config">
         <ee:transform doc:name="Transform Message">
@@ -629,14 +742,38 @@ output application/json
             </ee:message>
         </ee:transform>
 		<salesforce:create type="Reservaciones__c" doc:name="Create" doc:id="0fdca168-5988-4633-9015-3ef3f696908d" config-ref="Salesforce_Config"/>
-		<ee:transform doc:name="Transform Message" doc:id="b0723fe0-b783-430c-82ca-0470162e157e" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="a63cfbe6-bb40-4bf1-9e50-be70f5f585e7" >
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="cfb3c541-2daf-4fa6-b0a7-5300ebee7b1d" type="MULE:EXPRESSION"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="b0723fe0-b783-430c-82ca-0470162e157e">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Reservacion creada."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="0769faf5-7d0b-4e6a-a5cb-c0a576896c20" >
+				<ee:transform doc:name="Transform Message" doc:id="871b5141-b611-4085-8c01-c9b0d130c185" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
 	<flow name="post:\kart:application\json:restaurante-system-api-config" doc:id="70278d8c-f218-48ed-b859-887aa826aba9" >
 		<ee:transform doc:name="Transform Message" doc:id="8e59f4af-5a1d-459a-9cbb-5ad9735610db" >
@@ -652,19 +789,47 @@ output application/java
 			</ee:message>
 		</ee:transform>
 		<salesforce:create doc:name="Create" doc:id="ed4067bc-9abd-4412-b300-6cdc2bf64470" config-ref="Salesforce_Config" type="Kart__c"/>
-		<ee:transform doc:name="Transform Message" doc:id="e68f189b-25cc-4431-80f4-d664280b8c1c" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="77f6dd2c-128a-497d-af59-bd877b596a3d" >
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="2d68b227-e91b-4995-a7eb-c6eb84dcc3f1" type="MULE:EXPRESSION"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="e68f189b-25cc-4431-80f4-d664280b8c1c">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Producto agregado al carrito."
+}]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="be7d32aa-a120-4286-ae37-47b3d180a2e1" >
+				<ee:transform doc:name="Transform Message" doc:id="1523d855-bc55-4c3e-a93f-bebb67783d21" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="post:\ordenes:application\json:restaurante-system-api-config" doc:id="c0d42eec-2aab-46b6-aa5a-bd8f0ddd9232" >
-		<ee:transform doc:name="Transform Message" doc:id="4de023f8-e45a-4421-8233-c1b236e410f2" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
+		<choice doc:name="Choice" doc:id="b6d54f5b-44b0-43af-b67a-ae2cf800f0bb" >
+			<when expression='#[payload.Tipo_entrega == "Domicilio"]'>
+				<choice doc:name="Choice" doc:id="cffd3dd1-319d-44ab-92e9-9fb2bfd6ffc7" >
+					<when expression="#[payload.Direccion?]">
+						<ee:transform doc:name="Transform Message" doc:id="fdc6150b-a9ea-43dd-bcaf-ad43d10b673e" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
 ---
 [{
@@ -674,10 +839,38 @@ output application/java
 	Tipo_entrega__c : payload.Tipo_entrega,
 	Celular__c : payload.Celular default "",
 	Productos__c : payload.Productos,
-	Estado__c : "Activa"
+	Estado__c : "Activa",
+	Direccion__c : payload.Direccion,
+	Anotactiones__c: payload.Anotaciones
 }]]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise>
+						<raise-error doc:name="Raise error" doc:id="ea0c3a3b-1141-44d3-a603-d5d8359d6e5e" type="MULE:EXPRESSION" description="Si selecciona entrega a domicilio indique su direccion."/>
+					</otherwise>
+				</choice>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="1449697c-bb60-4c09-8c91-fa6e4da59d02" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	ClienteId__c : payload.ClienteId,
+	Total__c : payload.Total,
+	Tipo_pago__c : payload.Tipo_pago,
+	Tipo_entrega__c : payload.Tipo_entrega,
+	Celular__c : payload.Celular default "",
+	Productos__c : payload.Productos,
+	Estado__c : "Activa",
+	Anotaciones__c : payload.Anotaciones
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
 		<salesforce:create type="Ordenes__c" doc:name="Create" doc:id="ce542a24-15dd-47d5-9416-7eb2c68b3752" config-ref="Salesforce_Config"/>
 		<ee:transform doc:name="Transform Message" doc:id="af2b2df5-b56b-44ff-86de-b44eb79b0553" >
 			<ee:message >
@@ -687,6 +880,20 @@ output application/json
 payload]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="12ccae59-7fa8-4b65-ab09-f96e510f4cf6" >
+				<ee:transform doc:name="Transform Message" doc:id="17096415-454e-4afc-bdf2-fe3539bbce8f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Si selecciona la entrega a domicilio indique su direrccion."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="post:\usuarios:application\json:restaurante-system-api-config">
         <ee:transform doc:name="Transform Message" doc:id="b88a1329-c7f3-49f3-a097-87017742b77d" >
@@ -705,15 +912,89 @@ output application/json
 			</ee:message>
 		</ee:transform>
 		<salesforce:create doc:name="Create" doc:id="0cc511af-a14a-49c3-b623-7bf3e5853261" config-ref="Salesforce_Config" type="Usuarios__c"/>
-		<ee:transform doc:name="Transform Message">
+		<choice doc:name="Choice" doc:id="7333284b-1fa0-4b1e-b26d-e8618e6af79d" >
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="6d087c4a-8d2f-438b-ace2-8892c43d332b" type="MULE:EXPRESSION"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
-payload]]></ee:set-payload>
+{
+	message : "Usuario creado"
+}]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f263c462-4e07-42c7-93c1-9743622853cf" >
+				<ee:transform doc:name="Transform Message" doc:id="3921a4d7-3858-43f1-9685-7043b6b50a11" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
+	<flow name="post:\ticket:application\json:restaurante-system-api-config" doc:id="b573b438-2598-4136-a474-099722a84220" >
+		<ee:transform doc:name="Transform Message" doc:id="814c9193-fd7f-4d42-a2af-2aed087a24d9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+[{
+	OrderId__c: payload.OrderId,
+	PayerId__c: payload.PayerId,
+	Email__c: payload.Email,
+	CountryCode__c: payload.CountryCode,
+	Amount__c: payload.Amount,
+	Currency__c: payload.Currency
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<salesforce:create doc:name="Create" doc:id="e6d68c8a-99d4-4841-8522-95286aa138c4" config-ref="Salesforce_Config" type="Tickets__c"/>
+		<choice doc:name="Choice" doc:id="4fb4e098-c773-4f38-82ce-c40ce65f97f5" >
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="e139aa1d-56c2-4d03-9e71-188abcd9d69f" type="MULE:EXPRESSION"/>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="7b66ad0f-3ea9-4c30-af85-1739d174b40b" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ticket creado."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a746791c-39c0-4dde-8e8e-beb1eac9e827" >
+				<ee:transform doc:name="Transform Message" doc:id="1dbb6a0c-6a2e-4488-a486-760ee5ce143d">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
 	<flow name="post:\login:application\json:restaurante-system-api-config" doc:id="27dfa765-3132-410f-ad76-87d6200b4ae6" >
 		<salesforce:query doc:name="Query" doc:id="e28849cf-d323-4af9-bd6d-3f37bfbdc4b2" config-ref="Salesforce_Config" escapeSpecialCharactersForParametersValue="true">
 			<salesforce:salesforce-query ><![CDATA[SELECT
