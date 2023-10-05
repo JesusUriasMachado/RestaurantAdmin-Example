@@ -45,5 +45,5 @@ target/
 .mule/
 .DS_Store
 velocity.log
-*.properties
+src/main/resources/staging.properties
 src/main/mule/global.xml
