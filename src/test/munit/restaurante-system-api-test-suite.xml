@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="restaurante-system-api-test-suite.xml" />
+	<munit:test name="restaurante-system-api-test-suite-get:\usuarios:restaurante-system-api-configTest" doc:id="91df0422-9608-487a-9b40-bab8f9ad0698" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Obtener Usuarios - Salesforce Query" doc:id="89196e3f-828c-45e6-b1d5-14750cbe857b" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="8f36dbc8-ba92-45a0-ba8c-904414faa3dc" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="53bcfe3f-c082-4b59-9181-923531bfc6c4" />
+			<flow-ref doc:name="Flow-ref to get:\usuarios:restaurante-system-api-config" doc:id="6e792967-91ea-4748-92ed-7acc433cbfa9" name="get:\usuarios:restaurante-system-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert expression" doc:id="b0c33781-092b-4424-be80-5997fc214bbb" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="restaurante-system-api-test-suite-get:\reservar:restaurante-system-api-configTest" doc:id="3484d0ed-0eb0-4640-ba86-9bcd6ab7ae35" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="d4998ad4-c493-48c7-9d76-7bd0ede72510" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="3201bb17-edcc-4a0f-93a1-a8b32db40286" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="75846487-72d4-4c76-a1ff-ccccea70d1d3" >
+				<munit:payload value='#[{&#10;  "fecha" : "09/09/23",&#10;  "hora" : "5:00 pm",&#10;  "personas" : 8,&#10;  "tipo_pago" : "Efectivo",&#10;  "anotaciones" : "Tener 2 mesas"&#10;}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\reservar:restaurante-system-api-config" doc:id="69e02ed8-31b4-4fca-ac5f-7f532853deca" name="get:\reservar:restaurante-system-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert expression" doc:id="cb82edb5-d6c8-4511-953f-8ca5f860eec6" />
+		</munit:validation>
+	</munit:test>
+	<munit:test name="restaurante-system-api-test-suite-get:\reservar:restaurante-system-api-configTestError" doc:id="f3bafa28-c74d-45b6-b2cf-118f53cd2d15" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="3a81b89c-f8e6-4f73-89f0-b813968d7553" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="4619f18a-a029-448f-b272-920bf6310e4d" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="6aee7144-6edd-4ebc-a534-47eab3b8e708" >
+				<munit:payload value="#[{}]" />
+				<munit:attributes value="#['queryParams' : {'fecha' : '22/10/09'}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to get:\reservar:restaurante-system-api-config" doc:id="72f3c70b-5989-4b93-bcf6-4e30242e48e8" name="get:\reservar:restaurante-system-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert doc:name="Assert expression" doc:id="81e6b744-c191-463b-9d66-098dae803e0d" >
+				<munit-tools:that ><![CDATA[#[import * from dw::test::Asserts 
+ ---
+payload.message must contain("No")]]]></munit-tools:that>
+			</munit-tools:assert>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="restaurante-system-api-test-suite-post:\login:application\json:restaurante-system-api-configTest" doc:id="c9b3a232-735e-4cf4-94c5-fe898ffb1168" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="a8747998-5c23-4d13-be0a-99cfff1f36fd" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="e28849cf-d323-4af9-bd6d-3f37bfbdc4b2" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="2d69d6b8-5683-4fad-acd4-68d802cfb848" >
+				<munit:payload value='#[{&#10;	Correo : "correo2@urias.com",&#10;	Contrasena : "urias"&#10;}]' />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\login:application\json:restaurante-system-api-config" doc:id="c671560e-8e6e-4b4e-8a3a-ecc1d6bc4ae0" name="post:\login:application\json:restaurante-system-api-config"/>
+		</munit:execution>
+		<munit:validation>
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="1405819f-9f66-4850-aaec-ba958b7e073a" actual="#[payload.logged]" expected="#[true]"/>
+		</munit:validation>
+	</munit:test>
+	<munit:test name="restaurante-system-api-test-suite-post:\login:application\json:restaurante-system-api-configNotLogged" doc:id="1b875523-10c9-4f13-ad57-52a3ab50aaf4" description="Test">
+		<munit:behavior >
+			<munit-tools:mock-when doc:name="Mock when" doc:id="56e287c7-0e80-485a-90ec-92db3123375d" processor="salesforce:query">
+				<munit-tools:with-attributes >
+					<munit-tools:with-attribute whereValue="e28849cf-d323-4af9-bd6d-3f37bfbdc4b2" attributeName="doc:id" />
+				</munit-tools:with-attributes>
+			</munit-tools:mock-when>
+		</munit:behavior>
+		<munit:execution >
+			<munit:set-event doc:name="Set Event" doc:id="912c100f-6eda-4635-a78c-1b9d0fcb6b65" >
+				<munit:payload value="#[{&#10;}]" />
+			</munit:set-event>
+			<flow-ref doc:name="Flow-ref to post:\login:application\json:restaurante-system-api-config" doc:id="2ad5f6f8-8956-4c84-baff-e69d7736fb14" name="post:\login:application\json:restaurante-system-api-config"/>
+		</munit:execution>
+		<munit:validation >
+			<munit-tools:assert-equals doc:name="Assert equals" doc:id="f3a5c760-a660-4f00-a166-d9ae684ba536" actual="#[payload.logged]" expected="#[false]"/>
+		</munit:validation>
+	</munit:test>
+
+
+</mule>
