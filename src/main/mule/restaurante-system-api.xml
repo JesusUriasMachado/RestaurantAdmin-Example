@@ -8,6 +8,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
     </http:listener-config>
     <apikit:config name="restaurante-system-api-config" api="restaurante-system-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <tls:context name="TLS_Context" doc:name="TLS Context" doc:id="0d7346ab-bb67-4934-939e-9758a438378c" >
+		<tls:trust-store insecure="true" />
 		<tls:key-store type="jks" path="${secure::key.path}" alias="${secure::key.alias}" keyPassword="${secure::key.pass}" password="${secure::key.pass}" />
 	</tls:context>
 	<salesforce:sfdc-config name="Salesforce_Config" doc:name="Salesforce Config" doc:id="033af67b-c5f8-483e-9b9e-45d1992567da" >
@@ -567,7 +568,7 @@ output application/json
 	<flow name="get:\kart\(id):restaurante-system-api-config" doc:id="ce62fbd0-ca51-465e-bf86-a345b32a37e5" >
 		<salesforce:query doc:name="Obtener Carritos" doc:id="3cd87b7b-d7c1-4c0a-a6c6-33045ca65bca" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT
-	IdProducto__c, Precio__c
+	ID, IdProducto__c, Precio__c
 FROM Kart__c
 WHERE IdUsuario__c = ':id']]></salesforce:salesforce-query>
 			<salesforce:parameters ><![CDATA[#[output application/java
@@ -675,7 +676,8 @@ output application/json
         </ee:transform>
     </flow>
     <flow name="post:\menu:application\json:restaurante-system-api-config">
-        <ee:transform doc:name="Mapeo De Datos">
+        <logger level="INFO" doc:name="Logger" doc:id="5439f357-8562-44ad-bc47-42f2b7ba7c25" message="#[payload]"/>
+		<ee:transform doc:name="Mapeo De Datos">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
 output application/json
@@ -1059,5 +1061,21 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="848624d8-5c32-4955-b9d8-9ad8cfa27370" >
+				<ee:transform doc:name="Transform Message" doc:id="1f57492e-a33a-40e5-8f13-cc14bb73d731" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message: "Ocurrio un error.",
+	details: error.description,
+	details2: payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 </mule>
