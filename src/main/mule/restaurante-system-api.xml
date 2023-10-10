@@ -1061,21 +1061,5 @@ output application/json
 				</ee:transform>
 			</otherwise>
 		</choice>
-		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="848624d8-5c32-4955-b9d8-9ad8cfa27370" >
-				<ee:transform doc:name="Transform Message" doc:id="1f57492e-a33a-40e5-8f13-cc14bb73d731" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message: "Ocurrio un error.",
-	details: error.description,
-	details2: payload.items.exception.message
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</on-error-propagate>
-		</error-handler>
 	</flow>
 </mule>
