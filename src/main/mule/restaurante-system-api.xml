@@ -243,18 +243,34 @@ output application/json
 		</error-handler>
 	</flow>
 	<flow name="delete:\usuarios\(id):restaurante-system-api-config">
-        <salesforce:query doc:name="Obtener Usuario A Eliminar" doc:id="db3cfb88-1c05-47e3-a5fa-f912e75d963a" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query ><![CDATA[SELECT
+		<try doc:name="Try" doc:id="3e3aff19-f781-422d-8eeb-2c0c52827508" >
+			<salesforce:query doc:name="Obtener Usuario A Eliminar" doc:id="db3cfb88-1c05-47e3-a5fa-f912e75d963a" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[SELECT
 	ID
 FROM Usuarios__c
 WHERE ID = ':id']]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[%dw 2.0
+			<salesforce:parameters><![CDATA[#[%dw 2.0
 output application/java
 ---
 {
 	id : attributes.uriParams.id
 }]]]></salesforce:parameters>
 		</salesforce:query>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="00c39e8f-0af6-43de-aab4-249975007e0b" >
+					<ee:transform doc:name="Transform Message" doc:id="e5cd12d7-7cf5-4901-be30-2af318c375db" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error"
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-propagate>
+			</error-handler>
+		</try>
 		<ee:transform doc:name="Mapeo De Datos" doc:id="60d24aa4-77cb-465d-9d08-04d76110f513" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -298,17 +314,33 @@ output application/json
 		</error-handler>
     </flow>
     <flow name="delete:\kart\(id)\(idP):restaurante-system-api-config" doc:id="572cd0db-765a-4f82-bf7f-3648cb053d0c" >
-		<salesforce:query doc:name="Obtener Carrito A Eliminar" doc:id="0140d3dc-3690-49d5-b800-047dcf02b206" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query ><![CDATA[SELECT
+		<try doc:name="Try" doc:id="863c9836-6bfc-493d-bc41-76b26b3f1b3b" >
+			<salesforce:query doc:name="Obtener Carrito A Eliminar" doc:id="0140d3dc-3690-49d5-b800-047dcf02b206" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[SELECT
 	ID
 FROM Kart__c
 WHERE IdProducto__c = ':idP']]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[output application/java
+			<salesforce:parameters><![CDATA[#[output application/java
 ---
 {
 	idP : attributes.uriParams.idP
 }]]]></salesforce:parameters>
 		</salesforce:query>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8dfa0101-8277-411f-8199-d213d127b6ab" >
+					<ee:transform doc:name="Transform Message" doc:id="f08901f6-3f9b-4be7-bad9-31eea3517780" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error"
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-propagate>
+			</error-handler>
+		</try>
 		<ee:transform doc:name="Mapeo De Datos" doc:id="2019d315-a5d8-4702-b07f-95d83620ee69" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -353,18 +385,34 @@ output application/json
 		</error-handler>
 	</flow>
 	<flow name="delete:\reservar\(id):restaurante-system-api-config">
-		<salesforce:query doc:name="Obtener Reservacion A Eliminar" doc:id="90910175-cb3f-4590-bbff-c5140e10861c" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query ><![CDATA[SELECT
+		<try doc:name="Try" doc:id="c6a34dfb-d0a1-4713-80e1-3e4e9c04148b" >
+			<salesforce:query doc:name="Obtener Reservacion A Eliminar" doc:id="90910175-cb3f-4590-bbff-c5140e10861c" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[SELECT
 	ID
 FROM Reservaciones__c
 WHERE ID = ':id']]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[%dw 2.0
+			<salesforce:parameters><![CDATA[#[%dw 2.0
 output application/java
 ---
 {
 	id : attributes.uriParams.id
 }]]]></salesforce:parameters>
 		</salesforce:query>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9d1ca394-eb84-412e-b630-216613b4b8ff" >
+					<ee:transform doc:name="Transform Message" doc:id="da67b0f8-0cb8-47ae-a066-46e69cf2b011" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error"
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-propagate>
+			</error-handler>
+		</try>
 		<ee:transform doc:name="Mapeo De Datos" doc:id="f827cc7f-a685-4f4f-94c7-ffcddfa62666" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -408,18 +456,34 @@ output application/json
 		</error-handler>
     </flow>
     <flow name="delete:\menu\(id):restaurante-system-api-config">
-		<salesforce:query doc:name="Obtener Menu A Eliminar" doc:id="ec26496d-efc3-4071-890a-ef9e1965968c" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query ><![CDATA[SELECT
+		<try doc:name="Try" doc:id="0d737d23-dbbe-47f7-a3dc-d3222f0d0537" >
+			<salesforce:query doc:name="Obtener Menu A Eliminar" doc:id="ec26496d-efc3-4071-890a-ef9e1965968c" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[SELECT
 	ID
 FROM Menu__c
 WHERE ID = ':id']]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[%dw 2.0
+			<salesforce:parameters><![CDATA[#[%dw 2.0
 output application/java
 ---
 {
 	id : attributes.uriParams.id
 }]]]></salesforce:parameters>
 		</salesforce:query>
+			<error-handler>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3539e74e-f9fc-4517-b85d-35f61a75bed0" type="ANY">
+					<ee:transform doc:name="Transform Message" doc:id="6f115698-79e9-4e7d-9b99-9c466666a620" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error"
+}]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+				</on-error-propagate>
+			</error-handler>
+		</try>
 		<ee:transform doc:name="Mapeo De Datos" doc:id="48c2c76d-1aca-4dea-ba30-07fc32b02bb3" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
