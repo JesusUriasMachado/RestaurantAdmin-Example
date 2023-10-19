@@ -189,6 +189,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="543db287-62e1-447a-8a80-af062534bae7" variableName="httpStatus"/>
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -239,6 +240,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="56537462-1530-4edd-86a7-fca2851f7b68" variableName="httpStatus" />
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -310,6 +312,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="04cad268-8a20-4a16-9a9b-1dbdf6ad119b" variableName="httpStatus" />
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -381,6 +384,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="73d69deb-10c5-49d2-90b0-95bda3b233d1" variableName="httpStatus" />
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -452,6 +456,7 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="3a0d6e5f-f23e-4804-a769-64a8300d0640" variableName="httpStatus" />
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -523,6 +528,7 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="fd929ffb-e2e8-457d-8def-6ee658f4a019" variableName="httpStatus" />
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -564,6 +570,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="404" doc:name="httpStatus" doc:id="9bf5a19d-a0a7-40a3-ba2d-4c43f9597133" variableName="httpStatus"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Menu No Encontrado">
@@ -613,6 +620,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="404" doc:name="httpStatus" doc:id="6ad571dc-2509-4fe3-a43c-e147aaf96da1" variableName="httpStatus"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Ordenes Encontradas" doc:id="71a16f94-1ee4-4416-8ddd-50440d07c70f" >
@@ -653,6 +661,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="404" doc:name="httpStatus" doc:id="c880a506-e2ba-4d58-a1f0-ab4db89f20eb" variableName="httpStatus"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Resultados Encontrados" doc:id="43c62f94-2b29-4e7e-80c2-b05464bd6b6b">
@@ -705,6 +714,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="404" doc:name="httpStatus" doc:id="aaab3c34-f7fd-4e3a-8c6c-c2272ca518b2" variableName="httpStatus"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Resultados Encontrados">
@@ -788,6 +798,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="4952a9f1-f3f1-4090-956e-95f3fd46c057" variableName="httpStatus"/>
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -838,6 +849,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="0661c7a3-4afd-4027-8367-800789ba60ec" variableName="httpStatus"/>
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -885,6 +897,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="6a7dab5a-756d-404b-8405-df87c14a12e0" variableName="httpStatus"/>
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -967,6 +980,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="1ac3e02b-59ee-482a-aa00-ef44681b3f6c" variableName="httpStatus"/>
 			</on-error-propagate>
 			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="385c5984-4bdf-4cc5-b127-d0222ea2343c">
 				<ee:transform doc:name="Orden No Creada" doc:id="d7d9d189-b46b-4c46-abd8-aeb83c3c01ff" >
@@ -980,6 +994,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="b065d011-723e-4b44-b00c-8770ebae28fe" variableName="httpStatus"/>
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -1030,6 +1045,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="0a9ffa68-582a-4887-a798-beb45e8e5a37" variableName="httpStatus"/>
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -1080,6 +1096,7 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+				<set-variable value="400" doc:name="httpStatus" doc:id="5ba56ca3-0a95-426d-aa27-5fce8e41a7cb" variableName="httpStatus"/>
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -1123,6 +1140,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+				<set-variable value="401" doc:name="httpStatus" doc:id="c0cc55c3-d19d-4db3-b9db-cf5a23f9892f" variableName="httpStatus"/>
 			</otherwise>
 		</choice>
 	</flow>

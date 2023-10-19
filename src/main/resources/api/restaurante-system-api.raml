@@ -194,6 +194,7 @@ traits:
     description: Se usa para iniciar sesion
     body:
       application/json:
+        type: !include examples/datatype/login-dataType.raml
         example: {
           Correo : "urias",
           Contrasena : "urias"
