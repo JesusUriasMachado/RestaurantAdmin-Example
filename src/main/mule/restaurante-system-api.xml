@@ -161,7 +161,7 @@ output application/java
 		<salesforce:update type="Ordenes__c" doc:name="Modificacion Parcial De Orden" doc:id="41f32710-30aa-461a-ac60-1a4c54308d25" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="42c413ba-ef76-4413-82a9-5db9dc54fdc9" >
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="f28eb187-6df4-4c83-8f76-f2ada5cef3c7" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="f28eb187-6df4-4c83-8f76-f2ada5cef3c7" type="CUSTOM:NOT_UPDATED"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Orden Modificada" doc:id="585ad149-014e-4b2c-a640-d9a86328dcd6">
@@ -177,7 +177,7 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="df3005e2-01ef-498f-81eb-c4bf3a598847" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="df3005e2-01ef-498f-81eb-c4bf3a598847" type="CUSTOM:NOT_UPDATED">
 				<ee:transform doc:name="Orden No Modificada" doc:id="64c452f1-2a64-4a74-b6ff-59d2be4652f7" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -190,6 +190,19 @@ output application/json
 					</ee:message>
 				</ee:transform>
 				<set-variable value="400" doc:name="httpStatus" doc:id="543db287-62e1-447a-8a80-af062534bae7" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="75210963-a952-4e67-94a1-d73ec77d57b4" >
+				<ee:transform doc:name="Transform Message" doc:id="a617d903-c1ca-47e3-921d-21ac5d13eceb" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -212,7 +225,7 @@ output application/java
 		<salesforce:update type="Menu__c" doc:name="Modificar Menu" doc:id="64ed2ef9-96a8-4ab2-adf4-add2f830c0cf" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="eda48c2a-7a23-4ed0-9b55-5de615759fee" >
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="3ddef6f1-56b9-4c71-863c-f12b51a48e14" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="3ddef6f1-56b9-4c71-863c-f12b51a48e14" type="CUSTOM:NOT_UPDATED"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Menu Modificado" doc:id="cd311599-5a3c-4eeb-b47e-870a220bc80f">
@@ -228,7 +241,7 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="895461d8-1148-4aa7-ab64-6431c1661492" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="895461d8-1148-4aa7-ab64-6431c1661492" type="CUSTOM:NOT_UPDATED">
 				<ee:transform doc:name="Menu No Modificado" doc:id="cb1d5c37-5684-4eb0-8673-171a6ed38b50" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -241,6 +254,19 @@ output application/json
 					</ee:message>
 				</ee:transform>
 				<set-variable value="400" doc:name="httpStatus" doc:id="56537462-1530-4edd-86a7-fca2851f7b68" variableName="httpStatus" />
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="cf507363-565d-474e-83f4-753acde4a2ce" >
+				<ee:transform doc:name="Transform Message" doc:id="98c73875-4184-4b46-9146-acf02fe79b95" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -260,16 +286,7 @@ output application/java
 		</salesforce:query>
 			<error-handler >
 				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="00c39e8f-0af6-43de-aab4-249975007e0b" >
-					<ee:transform doc:name="Transform Message" doc:id="e5cd12d7-7cf5-4901-be30-2af318c375db" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error"
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
+					<raise-error doc:name="Raise error" doc:id="d84622b3-a057-4338-b293-7e37b93de2fd" type="CUSTOM:FIND" description="Error al obtener el usuario a eliminar."/>
 				</on-error-propagate>
 			</error-handler>
 		</try>
@@ -284,7 +301,7 @@ output application/json
 		<salesforce:delete doc:name="Eliminar Usuario" doc:id="bf973305-7923-4f83-8495-9c6b695de0fd" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="a4013b0a-978f-4923-9365-5c6533ba3aef" >
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="e2a6983f-c23c-48f6-b92d-a1d56d0672b0" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="e2a6983f-c23c-48f6-b92d-a1d56d0672b0" type="CUSTOM:NOT_DELETED"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Usuario Eliminado" doc:id="44fdc4d6-6fda-4b71-a35d-d0a89e1d51ce" >
@@ -300,7 +317,7 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2c3bb711-9fe0-4605-9979-151e67ad046a" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2c3bb711-9fe0-4605-9979-151e67ad046a" type="CUSTOM:NOT_DELETED">
 				<ee:transform doc:name="Usuario No Eliminado" doc:id="09f76861-7101-4fbe-a38c-27ad2cf90241" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -312,7 +329,34 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<set-variable value="400" doc:name="httpStatus" doc:id="04cad268-8a20-4a16-9a9b-1dbdf6ad119b" variableName="httpStatus" />
+				<set-variable value="400" doc:name="Set Status" doc:id="04cad268-8a20-4a16-9a9b-1dbdf6ad119b" variableName="httpStatus" />
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8117ab0f-cf26-4db3-9cbf-f997d25c389d" type="CUSTOM:FIND">
+				<ee:transform doc:name="Transform Message" doc:id="e38193c9-c33a-4e8a-b4d4-7b24b5e6b044" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="404" doc:name="Set Status" doc:id="b55472d2-bce8-4213-82d9-5cdae9f5bf35" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8c2c19e8-f913-4294-8e64-3eb6d3d170a6" >
+				<ee:transform doc:name="Transform Message" doc:id="1daca64d-060a-4376-bc62-6207f26b6baa" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -331,16 +375,7 @@ WHERE IdProducto__c = ':idP']]></salesforce:salesforce-query>
 		</salesforce:query>
 			<error-handler >
 				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="8dfa0101-8277-411f-8199-d213d127b6ab" >
-					<ee:transform doc:name="Transform Message" doc:id="f08901f6-3f9b-4be7-bad9-31eea3517780" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error"
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
+					<raise-error doc:name="Raise error" doc:id="9eb25143-b9b9-4325-ab44-f049727d7a07" type="CUSTOM:FIND" description="No se pudo obtener el carrito a eliminar."/>
 				</on-error-propagate>
 			</error-handler>
 		</try>
@@ -356,7 +391,7 @@ output application/java
 		<salesforce:delete doc:name="Eliminar Carrito" doc:id="fcc770e7-25cb-4687-961b-cdc6693a0be3" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="fba338e5-53ff-431b-b365-5750c1115154" >
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="df771d1f-e579-4d57-ac6e-38dd3a5e7f29" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="df771d1f-e579-4d57-ac6e-38dd3a5e7f29" type="CUSTOM:NOT_DELETED"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Carrito Eliminado" doc:id="2a2e5ff6-5a04-444b-bc93-44d697ab197e" >
@@ -372,7 +407,7 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b62e6b97-d994-4d7a-bbe4-3827fec017f4" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b62e6b97-d994-4d7a-bbe4-3827fec017f4" type="CUSTOM:NOT_DELETED">
 				<ee:transform doc:name="Carrito No Eliminado" doc:id="0adbb3c8-6b61-4af5-a65f-f4ff203e7500" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
@@ -385,6 +420,33 @@ output application/json
 					</ee:message>
 				</ee:transform>
 				<set-variable value="400" doc:name="httpStatus" doc:id="73d69deb-10c5-49d2-90b0-95bda3b233d1" variableName="httpStatus" />
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="7a09c410-fb90-4a69-b154-187e0d3b575c" type="CUSTOM:FIND">
+				<ee:transform doc:name="Transform Message" doc:id="50ca2cfd-eb38-422b-8a1d-79b96c385d83" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="404" doc:name="Set Status" doc:id="7598d8b7-caca-4923-9b4d-75f0ab92a686" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="ee695883-7f08-439c-8ccf-9494501d72c6" >
+				<ee:transform doc:name="Transform Message" doc:id="70e838e4-600f-4b19-81b8-a2ac3c3aebe6" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
 			</on-error-propagate>
 		</error-handler>
 	</flow>
@@ -404,16 +466,7 @@ output application/java
 		</salesforce:query>
 			<error-handler >
 				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="9d1ca394-eb84-412e-b630-216613b4b8ff" >
-					<ee:transform doc:name="Transform Message" doc:id="da67b0f8-0cb8-47ae-a066-46e69cf2b011" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error"
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
+					<raise-error doc:name="Raise error" doc:id="d60bf7e5-abbb-486d-b614-8a14b2382dd6" type="CUSTOM:FIND" description="No se pudo obtener la reservacion a eliminar."/>
 				</on-error-propagate>
 			</error-handler>
 		</try>
@@ -428,7 +481,7 @@ output application/java
 		<salesforce:delete doc:name="Eliminar Reservacion" doc:id="02411d38-df02-455a-a0f4-6add86d4e5a2" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="13fb2350-0b2f-4c2f-b22a-c4051e9cee4a" >
 			<when expression='#[payload.successful == false]'>
-				<raise-error doc:name="Raise error" doc:id="37440165-044f-4504-86f7-4041d939e129" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="37440165-044f-4504-86f7-4041d939e129" type="CUSTOM:NOT_DELETED"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Reservacion Eliminada" doc:id="198b77d1-067d-4f8e-8025-84e85e5986fe" >
@@ -444,7 +497,7 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f6f088f9-3827-4d7b-8152-5af229a0e1dd" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="f6f088f9-3827-4d7b-8152-5af229a0e1dd" type="Custom:NOT_DELETED">
 				<ee:transform doc:name="Reservacion No Eliminada" doc:id="af116e65-cf9d-4105-9b94-c5a7ec7b262b">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -457,6 +510,20 @@ output application/json
 			</ee:message>
 		</ee:transform>
 				<set-variable value="400" doc:name="httpStatus" doc:id="3a0d6e5f-f23e-4804-a769-64a8300d0640" variableName="httpStatus" />
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="6387eebb-6c16-47ca-a6c1-8e6a8e94bbbf" type="CUSTOM:FIND">
+				<ee:transform doc:name="Transform Message" doc:id="b5d3cc12-a09b-4b6b-a972-ba8e2af4ddf8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="404" doc:name="Set Status" doc:id="546ea4f0-7fa3-4a4e-a4aa-0514e9b0737e" variableName="httpStatus"/>
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -476,16 +543,7 @@ output application/java
 		</salesforce:query>
 			<error-handler>
 				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3539e74e-f9fc-4517-b85d-35f61a75bed0" type="ANY">
-					<ee:transform doc:name="Transform Message" doc:id="6f115698-79e9-4e7d-9b99-9c466666a620" >
-						<ee:message >
-							<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error"
-}]]></ee:set-payload>
-						</ee:message>
-					</ee:transform>
+					<raise-error doc:name="Raise error" doc:id="36775dce-0e2e-4075-a466-685823871824" type="CUSTOM:FIND" description="Error al obtener el menu a eliminar."/>
 				</on-error-propagate>
 			</error-handler>
 		</try>
@@ -500,7 +558,7 @@ output application/java
 		<salesforce:delete doc:name="Eliminar Menu" doc:id="c591d6fa-7f6c-46ff-82e8-36a2124890f8" config-ref="Salesforce_Config"/>
 		<choice doc:name="Choice" doc:id="24479a92-5207-40de-8839-174e0de5e02c" >
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="0f3d4470-3f55-4d12-b9f7-58b33340eb17" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="0f3d4470-3f55-4d12-b9f7-58b33340eb17" type="CUSTOM:NOT_DELETED"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Menu Eliminado" doc:id="47a9f38f-66ea-4338-a8d2-2b9fbc2ffc00" >
@@ -516,7 +574,7 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3e97b168-b499-4ece-9d96-ed019e0925d7" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3e97b168-b499-4ece-9d96-ed019e0925d7" type="CUSTOM:NOT_DELETED">
 				<ee:transform doc:name="Menu No Eliminado" doc:id="9b987b24-f5a5-4796-a783-c2ce16cbbcb4">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -529,6 +587,33 @@ output application/json
 			</ee:message>
 		</ee:transform>
 				<set-variable value="400" doc:name="httpStatus" doc:id="fd929ffb-e2e8-457d-8def-6ee658f4a019" variableName="httpStatus" />
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="de2ca479-2e73-4a60-9a1b-c127117855a5" type="CUSTOM:FIND">
+				<ee:transform doc:name="Transform Message" doc:id="fc436e72-8d06-4462-9f7d-e6770c232c56" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="404" doc:name="Set Variable" doc:id="0a7ffa36-04a5-4135-a31e-418d08661b61" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="d4ceb007-3111-4e7e-a5ff-3e9c676d8c82" >
+				<ee:transform doc:name="Transform Message" doc:id="45ae3991-5299-44ad-84df-4679841b5252" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
 			</on-error-propagate>
 		</error-handler>
     </flow>
@@ -638,17 +723,24 @@ output application/json
 		</choice>
 	</flow>
 	<flow name="get:\kart\(id):restaurante-system-api-config" doc:id="ce62fbd0-ca51-465e-bf86-a345b32a37e5" >
-		<salesforce:query doc:name="Obtener Carritos" doc:id="3cd87b7b-d7c1-4c0a-a6c6-33045ca65bca" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query ><![CDATA[SELECT
+		<try doc:name="Try" doc:id="ee642734-c16b-4ce5-9eca-983dd59e7723" >
+			<salesforce:query doc:name="Obtener Carritos" doc:id="3cd87b7b-d7c1-4c0a-a6c6-33045ca65bca" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[SELECT
 	ID, IdProducto__c, Precio__c
 FROM Kart__c
 WHERE IdUsuario__c = ':id']]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[output application/java
+			<salesforce:parameters><![CDATA[#[output application/java
 ---
 {
 	id : attributes.uriParams.id
 }]]]></salesforce:parameters>
 		</salesforce:query>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="fa23f3ef-2f5f-42d0-add0-3c31678e2ed0" >
+					<raise-error doc:name="Raise error" doc:id="da973234-8594-41f7-8b57-68b90e9159d5" type="CUSTOM:FIND" description="Error al obtener el producto."/>
+				</on-error-propagate>
+			</error-handler>
+		</try>
 		<choice doc:name="Choice" doc:id="fa4da4e4-2349-4cec-9485-5dffe3264ba9" >
 			<when expression="#[sizeOf(payload) &lt; 1]">
 				<ee:transform doc:name="Resultados No Encontrados" doc:id="c28feeff-a463-4394-8858-259d036419b7" >
@@ -677,6 +769,34 @@ output application/json
 		</ee:transform>
 			</otherwise>
 		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="83b21bb4-f36b-47ee-be39-d066f020ab9f" type="CUSTOM:FIND">
+				<ee:transform doc:name="Transform Message" doc:id="cffa9109-8eb3-482d-8906-3a6f30986196" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="dacbf7e3-ca4d-4483-8f25-54564209d1d9" >
+				<ee:transform doc:name="Transform Message" doc:id="ce348e12-f72a-4b6b-97b6-a90481eb48c9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 	<flow name="get:\reservar:restaurante-system-api-config">
 		<choice doc:name="Choice" doc:id="f82d9c51-79eb-4858-9e75-06e576c6de16" >
@@ -730,6 +850,21 @@ output application/json
         </ee:transform>
 			</otherwise>
 		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="14a73ae8-5370-4c78-926a-dea6769bb973" >
+				<ee:transform doc:name="Transform Message" doc:id="aafac1e3-231f-499b-b433-08c8c47e404f" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
     <flow name="get:\usuarios:restaurante-system-api-config">
         <salesforce:query doc:name="Obtener Usuarios" doc:id="8f36dbc8-ba92-45a0-ba8c-904414faa3dc" config-ref="Salesforce_Config">
@@ -748,6 +883,21 @@ output application/json
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="71fedaa2-2546-4e96-952c-397305a9f16b" >
+				<ee:transform doc:name="Transform Message" doc:id="4c635524-e4bb-45e9-ae75-6973db79c39a" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
     </flow>
     <flow name="post:\menu:application\json:restaurante-system-api-config">
         <logger level="INFO" doc:name="Logger" doc:id="5439f357-8562-44ad-bc47-42f2b7ba7c25" message="#[payload]"/>
@@ -770,7 +920,7 @@ output application/json
 		<salesforce:create doc:name="Creacion Del Menu" doc:id="d5cf6907-6b2d-4a4d-b4fa-cd86723b8d8e" config-ref="Salesforce_Config" type="Menu__c"/>
 		<choice doc:name="Choice" doc:id="30fb1af4-bb2b-45eb-bcc7-94ee2b984534" >
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="aaec384b-6211-412c-9d33-f02e119282a7" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="aaec384b-6211-412c-9d33-f02e119282a7" type="CUSTOM:UNSUCESSFUL"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Menu Creado" doc:id="83c12d46-533b-4320-bc44-d6ebf556cd55">
@@ -786,19 +936,32 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="77431ff9-0984-4e24-8293-1edd66f5e5ca" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="77431ff9-0984-4e24-8293-1edd66f5e5ca" type="CUSTOM:UNSUCESSFUL">
 				<ee:transform doc:name="Menu No Creado" doc:id="20b48f77-1ee4-4f1a-ae40-e7fc67069430" >
 					<ee:message >
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
 {
-	message : "Ocurrio un error.",
+	message : "Ocurrio un error al crear el menu.",
 	details : payload.items.exception.message
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 				<set-variable value="400" doc:name="httpStatus" doc:id="4952a9f1-f3f1-4090-956e-95f3fd46c057" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="10848242-ff8c-4b59-bb9a-56085d8a7b1a" >
+				<ee:transform doc:name="Transform Message" doc:id="c7069cc2-589b-4a88-b475-3c80d3606c6d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
 			</on-error-propagate>
 		</error-handler>
     </flow>
