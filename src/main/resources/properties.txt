@@ -1,0 +1,10 @@
+http.port=
+key.pass=
+key.path=
+key.alias=
+app.id=
+sf.user=
+sf.pass=
+sf.token=
+smtp.email=
+smtp.pass=

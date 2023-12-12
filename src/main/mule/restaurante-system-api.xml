@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce" xmlns:tls="http://www.mulesoft.org/schema/mule/tls" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
 http://www.mulesoft.org/schema/mule/tls http://www.mulesoft.org/schema/mule/tls/current/mule-tls.xsd
 http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
-http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
     <http:listener-config name="restaurante-system-api-httpListenerConfig">
         <http:listener-connection host="0.0.0.0" port="${secure::http.port}" protocol="HTTPS" tlsContext="TLS_Context"/>
     </http:listener-config>
@@ -20,6 +21,13 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 			<http:default-header key="Authorization" value="Bearer EAAEfa0V5PHIBO18c6EGzVf9Pz8JsDpPZCAWZBWdjks6JMkMSnJSicbzJXACJxSqQJzOwyKo9hr9Tpd3UCIMZAK1srFxpw3NCMqAcir64kZAWB7gSr5xhOJJlZCgYnWQ7OxmFckUleFDyGDVLU6P68DUMZAK1UR951XV8FG1s6fvZBXRZCNlqhmjIkbqbxy4s1orcEQjcveOWcnJSe0aZCwSAZD" />
 		</http:default-headers>
 	</http:request-config>
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="0ffc07fa-44cd-4656-b757-cd40b42ad34b" >
+		<email:smtps-connection host="smtp.gmail.com" user="${secure::smtp.email}" password="${secure::smtp.pass}" >
+			<tls:context >
+				<tls:trust-store insecure="true" />
+			</tls:context>
+		</email:smtps-connection>
+	</email:smtp-config>
 	<flow name="restaurante-system-api-main">
         <http:listener config-ref="restaurante-system-api-httpListenerConfig" path="/api/*">
             <http:response statusCode="#[vars.httpStatus default 200]">
@@ -1162,7 +1170,9 @@ output application/json
 		</error-handler>
 	</flow>
 	<flow name="post:\usuarios:application\json:restaurante-system-api-config">
-        <ee:transform doc:name="Mapeo De Datos" doc:id="b88a1329-c7f3-49f3-a097-87017742b77d" >
+        <set-variable value='#[(random() * 10000) as String {format: "0000"}]' doc:name="Set Codigo" doc:id="410479e5-f145-4106-8f55-00622345a882" variableName="codigo"/>
+		<set-variable value="#[payload.Correo]" doc:name="Set Variable" doc:id="328015ab-2484-42ec-a84d-a76b06083184" variableName="correo"/>
+		<ee:transform doc:name="Mapeo De Datos" doc:id="b88a1329-c7f3-49f3-a097-87017742b77d" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
@@ -1173,7 +1183,9 @@ output application/json
 	Direccion__c : payload.Direccion,
 	Correo__c : payload.Correo,
 	Contrasena__c : payload.Contrasena,
-	Celular__c : payload.Celular
+	Celular__c : payload.Celular,
+	Verificado__c : "No Verificado",
+	Codigo__c : vars.codigo
 }]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
@@ -1183,6 +1195,14 @@ output application/json
 				<raise-error doc:name="Raise error" doc:id="6d087c4a-8d2f-438b-ace2-8892c43d332b" type="MULE:EXPRESSION"/>
 			</when>
 			<otherwise >
+				<email:send doc:name="Enviar Codigo" doc:id="79baaa20-9e89-4c81-b610-1c3af2dcdf46" config-ref="Email_SMTP" fromAddress="proyectoanypoint@gmail.com" subject="Verifica tu cuenta!">
+					<email:to-addresses >
+						<email:to-address value="#[vars.correo]" />
+					</email:to-addresses>
+					<email:body contentType="text/html" >
+						<email:content ><![CDATA[#["Tu codigo de verificacion es " ++ vars.codigo]]]></email:content>
+					</email:body>
+				</email:send>
 				<ee:transform doc:name="Usuario Creado">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
