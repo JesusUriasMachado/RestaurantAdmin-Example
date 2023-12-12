@@ -1209,7 +1209,7 @@ output application/json
 output application/json
 ---
 {
-	message : "Usuario creado"
+	message : "Usuario creado. Verificacion necesaria."
 }]]></ee:set-payload>
             </ee:message>
         </ee:transform>
@@ -1326,5 +1326,98 @@ output application/json
 				<set-variable value="401" doc:name="httpStatus" doc:id="c0cc55c3-d19d-4db3-b9db-cf5a23f9892f" variableName="httpStatus"/>
 			</otherwise>
 		</choice>
+	</flow>
+	<flow name="patch:\usuarios\(id)\verificar:application\json:restaurante-system-api-config" doc:id="e718250a-c5ca-44e1-a4ab-0bebcd764db6" >
+		<set-variable value="#[attributes.uriParams.id]" doc:name="Set Id" doc:id="bd8737dc-f7f4-4f32-8aaf-a0e1691b395f" variableName="id"/>
+		<salesforce:query doc:name="Query" doc:id="428a43c7-160e-4056-88e9-948cd21b886c" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	ID
+FROM Usuarios__c
+WHERE Codigo__c = ':codigo' AND Correo__c = ':correo' AND ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	codigo : payload.Codigo,
+	correo : payload.Correo,
+	id : vars.id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="d838b74a-e255-4f92-a1da-89f54d52def7" >
+			<when expression="#[sizeOf(payload) &lt; 1]">
+				<ee:transform doc:name="Transform Message" doc:id="58b21ab0-e9d2-4aaa-9e21-c658a8ea8ff7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Campos Incorrectos."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="401" doc:name="Set httpStatus" doc:id="fc243714-240d-4557-9349-8d58ab467a27" variableName="httpStatus"/>
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="3adc6f0b-c349-4669-a08a-fb2b68e403a8" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[{
+	ID : vars.id,
+	Verificado__c : "Correo Verificado",
+	Codigo__c : "0000"
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:update type="Usuarios__c" doc:name="Verificar Correo" doc:id="dcf3144a-9d55-4bd4-baea-fb3a591b24fd" config-ref="Salesforce_Config"/>
+				<choice doc:name="Choice" doc:id="49608260-bb81-4ffd-a164-18dccce6c358" >
+					<when expression="#[payload.successful == false]">
+						<raise-error doc:name="Raise error" doc:id="300bf40f-1e24-489c-a7a0-45892baecc73" type="CUSTOM:NOT_UPDATED"/>
+					</when>
+					<otherwise >
+						<ee:transform doc:name="Transform Message" doc:id="b1e45d28-5f9d-44e9-bf7c-72afe1b764e0" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Usuario verificado."
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="893d7a0d-373b-4fdb-b13c-4a6c612e522c" type="CUSTOM:NOT_UPDATED">
+				<ee:transform doc:name="Transform Message" doc:id="3ce61724-6e49-4191-a85f-a2ae903ecdbd" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error. No se pudo validar el usuario",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="400" doc:name="Set httStatus" doc:id="52f6b1fd-d8bf-44b5-b568-47ce050414a7" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2e869a56-ee63-491f-b3f9-32e3d1835161" >
+				<ee:transform doc:name="Transform Message" doc:id="d358e60b-3ea2-4e37-ae18-6ab98f72ede0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 </mule>

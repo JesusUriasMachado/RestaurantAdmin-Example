@@ -182,6 +182,28 @@ traits:
               example: {
                 "message" : "Eliminado"
               }
+    /verificar:
+      patch:
+        description: Se usa para verificar el correo de un usuario
+        displayName: Verificar
+        is:
+          - hasHeaders
+          - responses
+        body:
+          application/json:
+            example: {
+              ID : '123',
+              Correo : '@gmail.com',
+              Codigo : "1234"
+            }
+        responses:
+          201:
+            description: CREATED
+            body:
+              application/json:
+                example: {
+                  message : "Usuario Verificado."
+                }
 
 /login:
   displayName: Panel Login
