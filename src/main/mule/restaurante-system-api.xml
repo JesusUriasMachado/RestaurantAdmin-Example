@@ -1357,6 +1357,98 @@ output application/json
 			</on-error-propagate>
 		</error-handler>
     </flow>
+	<flow name="post:\usuarios\(id)\verificar:application\json:restaurante-system-api-config" doc:id="db5dbf27-0b8d-4638-a5b5-c6f9ae013da4" >
+		<set-variable value='#[(random() * 10000) as String {format: "0000"}]' doc:name="Set Codigo" doc:id="ed719ba8-c94d-459c-ac87-d71fb39642c2" variableName="codigo"/>
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;[{&#10;	ID : attributes.uriParams.id,&#10;	Codigo__c : vars.codigo,&#10;	Correo__c : payload.Correo&#10;}]]" doc:name="Set Usuario" doc:id="e9969a22-74d3-40b1-9ca0-c0a5cc82581a" variableName="usuario"/>
+		<salesforce:query doc:name="Query" doc:id="1570421f-5e0b-4f03-abfb-67595721b096" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	Verificado__c
+FROM Usuarios__c
+WHERE ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	id : attributes.uriParams.id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="573a2ad1-0ad9-4301-af3e-be15d989331a" >
+			<when expression="#[payload.Verificado__c[0] ~= true]">
+				<ee:transform doc:name="Usuario Ya Verificado" doc:id="dfee8ca1-6b60-420e-963c-ff2f495b164c" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Este usuario ya esta verificado"
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="200" doc:name="Set httpStatus" doc:id="f5235c55-1198-4e2e-8d50-1b6a0a8f3ec9" variableName="httpStatus"/>
+			</when>
+			<otherwise >
+				<salesforce:update doc:name="Update" doc:id="718fd158-e639-45de-b9f1-e583b56b2aaf" config-ref="Salesforce_Config" type="Usuarios__c">
+			<salesforce:records><![CDATA[#[vars.usuario]]]></salesforce:records>
+		</salesforce:update>
+				<choice doc:name="Choice" doc:id="b99a549c-d73b-4239-bbb2-cf6b6a64a529">
+			<when expression="#[payload.successful == true]">
+				<email:send doc:name="Send" doc:id="80de68f4-20ef-4899-9a4b-842ad8f88517" config-ref="Email_SMTP" fromAddress="proyectoanypoint@gmail.com" subject="Verifica tu cuenta!">
+					<email:to-addresses>
+						<email:to-address value="#[vars.usuario.Correo__c[0]]" />
+					</email:to-addresses>
+					<email:body contentType="text/html">
+						<email:content><![CDATA[#["Tu codigo de verificacion es " ++ vars.codigo]]]></email:content>
+					</email:body>
+				</email:send>
+				<ee:transform doc:name="Verificacion Iniciada" doc:id="96fe46c5-0626-48b8-a25e-4d2e17d5f057">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Verificacion iniciada."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<raise-error doc:name="Raise error" doc:id="73674ee1-36d4-40f3-82a5-7ae9cefb15c2" type="CUSTOM:NOT_VALIDATED" />
+			</otherwise>
+		</choice>
+			</otherwise>
+		</choice>
+		<remove-variable doc:name="Remove Codigo" doc:id="3e30e67b-de30-48ff-a6cf-e8070d13bb67" variableName="codigo"/>
+		<remove-variable doc:name="Remove Correo" doc:id="08cec61a-1646-4515-b388-9d31dfbbe3b6" variableName="correo"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a6a3ce58-8496-462c-ad8a-2a89efcca5c2" type="CUSTOM:NOT_VALIDATED">
+				<ee:transform doc:name="Verificacion No Iniciada" doc:id="c84afcca-c988-4a25-a7f5-caf583a0def1" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error. Verificacion no iniciada.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="400" doc:name="Set httpStatus" doc:id="fa064044-756d-4b4c-8ed5-0b44f65411de" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="80dac265-16bb-48fc-92f2-7ed8c2c2c205" >
+				<ee:transform doc:name="Transform Message" doc:id="4925fb74-193b-4761-ac33-cf279c260785" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="400" doc:name="Set httpStatus" doc:id="fae252e4-38e3-4c67-bfc6-86eeffd7a960" variableName="httpStatus"/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
 	<flow name="post:\ticket:application\json:restaurante-system-api-config" doc:id="b573b438-2598-4136-a474-099722a84220" >
 		<ee:transform doc:name="Mapeo De Datos" doc:id="814c9193-fd7f-4d42-a2af-2aed087a24d9" >
 			<ee:message >

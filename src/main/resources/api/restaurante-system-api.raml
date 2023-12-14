@@ -183,6 +183,26 @@ traits:
                 "message" : "Eliminado"
               }
     /verificar:
+      post:
+          description: Se actualiza el codigo de verificacion
+          displayName: Solicitar verificacion
+          is:
+            - hasHeaders
+            - responses
+          body:
+            application/json:
+              type: object
+              properties:
+                Correo:
+                  type: string
+                  required: true
+          responses:
+            201:
+              body:
+                application/json:
+                  example: {
+                    message : "Usuario Verificado."
+                  }
       patch:
         description: Se usa para verificar el correo de un usuario
         displayName: Verificar
