@@ -779,7 +779,7 @@ output application/json
 			<when expression='#[attributes.queryParams.activas == "true"]'>
 				<salesforce:query doc:name="Obtener Ordenes Activas" doc:id="6c68b11e-90f1-4e4a-958f-35ad1dff9db4" config-ref="Salesforce_Config">
 					<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, ClienteId__c, Total__c, Tipo_pago__c, Tipo_entrega__c,
+	ID, IdUsuario__c, Total__c, Tipo_pago__c, Tipo_entrega__c,
 	Celular__c, Productos__c, Estado__c
 FROM Ordenes__c
 WHERE Estado__c = 'Activa']]></salesforce:salesforce-query>
@@ -788,7 +788,7 @@ WHERE Estado__c = 'Activa']]></salesforce:salesforce-query>
 			<otherwise >
 				<salesforce:query doc:name="Obtener Todas Las Ordenes" doc:id="56a08239-a68d-439f-90f2-c5ac5cd0131b" config-ref="Salesforce_Config">
 					<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, ClienteId__c, Total__c, Tipo_pago__c, Tipo_entrega__c,
+	ID, IdUsuario__c, Total__c, Tipo_pago__c, Tipo_entrega__c,
 	Celular__c, Productos__c, Estado__c
 FROM Ordenes__c]]></salesforce:salesforce-query>
 				</salesforce:query>
@@ -904,7 +904,7 @@ output application/json
 			<when expression="#[attributes.queryParams.fecha?]" >
 				<salesforce:query doc:name="Obtener Reservaciones Por Fecha" doc:id="4619f18a-a029-448f-b272-920bf6310e4d" config-ref="Salesforce_Config" >
 					<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, Fecha__c, Hora__c, Celular__c, Personas__c, Tipo_Pago__c, Anotaciones__c
+	ID, IdUsuario__c, Fecha__c, Hora__c, Celular__c, Personas__c, Tipo_Pago__c, Anotaciones__c
 FROM Reservaciones__c
 WHERE Fecha__c = ':fecha']]></salesforce:salesforce-query>
 					<salesforce:parameters ><![CDATA[#[%dw 2.0
@@ -918,7 +918,7 @@ output application/java
 			<otherwise >
 				<salesforce:query doc:name="Obtener Reservaciones" doc:id="3201bb17-edcc-4a0f-93a1-a8b32db40286" config-ref="Salesforce_Config" >
 					<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, Fecha__c, Hora__c, Celular__c, Personas__c, Tipo_Pago__c, Anotaciones__c
+	ID, IdUsuario__c, Fecha__c, Hora__c, Celular__c, Personas__c, Tipo_Pago__c, Anotaciones__c
 FROM Reservaciones__c]]></salesforce:salesforce-query>
 				</salesforce:query>
 			</otherwise>
@@ -1067,27 +1067,28 @@ output application/json
 		</error-handler>
     </flow>
     <flow name="post:\reservar:application\json:restaurante-system-api-config">
-        <ee:transform doc:name="Mapeo De Datos">
-            <ee:message>
-                <ee:set-payload><![CDATA[%dw 2.0
-output application/json
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;[{&#10;  IdUsuario__c : payload.IdUsuario,&#10;  Fecha__c: payload.Fecha,&#10;  Hora__c: payload.Hora,&#10;  Celular__c : payload.Celular,&#10;  Personas__c: payload.Personas,&#10;  Tipo_pago__c: payload.Pago,&#10;  Anotaciones__c: payload.Anotaciones&#10;}]]" doc:name="Set Reservacion" doc:id="e99f7a7a-0cb7-4b54-ba8a-4224a6d20d9e" variableName="reservacion"/>
+		<salesforce:query doc:name="Checar Verificado" doc:id="fb1fd83a-5d58-4875-a83b-52f07f1eca07" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	Verificado__c
+FROM Usuarios__c
+WHERE ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
 ---
-[{
-  Fecha__c: payload.Fecha,
-  Hora__c: payload.Hora,
-  Celular__c : payload.Celular,
-  Personas__c: payload.Personas,
-  Tipo_pago__c: payload.Pago,
-  Anotaciones__c: payload.Anotaciones
-}]]]></ee:set-payload>
-            </ee:message>
-        </ee:transform>
-		<salesforce:create type="Reservaciones__c" doc:name="Creacion De La Reservacion" doc:id="0fdca168-5988-4633-9015-3ef3f696908d" config-ref="Salesforce_Config"/>
-		<choice doc:name="Choice" doc:id="a63cfbe6-bb40-4bf1-9e50-be70f5f585e7" >
+{
+	id : payload.IdUsuario
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="fbf013d3-7146-42d7-bfeb-184b7ceeaf28" >
+			<when expression="#[payload.Verificado__c[0] ~= true]">
+				<salesforce:create type="Reservaciones__c" doc:name="Creacion De La Reservacion" doc:id="0fdca168-5988-4633-9015-3ef3f696908d" config-ref="Salesforce_Config">
+			<salesforce:records><![CDATA[#[vars.reservacion]]]></salesforce:records>
+		</salesforce:create>
+				<choice doc:name="Choice" doc:id="a63cfbe6-bb40-4bf1-9e50-be70f5f585e7">
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="cfb3c541-2daf-4fa6-b0a7-5300ebee7b1d" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="cfb3c541-2daf-4fa6-b0a7-5300ebee7b1d" type="MULE:EXPRESSION" />
 			</when>
-			<otherwise >
+			<otherwise>
 				<ee:transform doc:name="Reservacion Creada" doc:id="b0723fe0-b783-430c-82ca-0470162e157e">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -1098,6 +1099,21 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Transform Message" doc:id="79ce8abe-4680-4591-b91b-346aa5698056" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Usuario no verificado."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="200" doc:name="Set httpStatus" doc:id="5cc8d80c-55ac-46cd-9112-30e375c62bd9" variableName="httpStatus"/>
 			</otherwise>
 		</choice>
 		<error-handler >
@@ -1118,25 +1134,28 @@ output application/json
 		</error-handler>
     </flow>
 	<flow name="post:\kart:application\json:restaurante-system-api-config" doc:id="70278d8c-f218-48ed-b859-887aa826aba9" >
-		<ee:transform doc:name="Transform Message" doc:id="d8a2a101-e0d4-42fb-8532-ccee45b21268" >
-			<ee:message >
-				<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;[{&#10;	IdUsuario__c: payload.IdUsuario,&#10;	IdProducto__c: payload.IdProducto,&#10;	Precio__c: payload.Precio&#10;}]]" doc:name="Set Kart" doc:id="d9b1fe5a-9078-4888-b87c-67917b2bdd00" variableName="kart"/>
+		<salesforce:query doc:name="Checar Verificado" doc:id="e8867cf3-4b80-43a0-b6b7-aa28e26117aa" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	Verificado__c
+FROM Usuarios__c
+WHERE ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
 ---
-[{
-	IdUsuario__c: payload.IdUsuario,
-	IdProducto__c: payload.IdProducto,
-	Precio__c: payload.Precio
-}]]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
-		<salesforce:create doc:name="Insercion De Carrito" doc:id="ed4067bc-9abd-4412-b300-6cdc2bf64470" config-ref="Salesforce_Config" type="Kart__c">
+{
+	id : payload.IdUsuario
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="7fca9151-17dc-426b-b623-e7fb9ea1819b" >
+			<when expression="#[payload.Verificado__c[0] ~= true]">
+				<salesforce:create doc:name="Insercion De Carrito" doc:id="ed4067bc-9abd-4412-b300-6cdc2bf64470" config-ref="Salesforce_Config" type="Kart__c">
+					<salesforce:records ><![CDATA[#[vars.kart]]]></salesforce:records>
 		</salesforce:create>
-		<choice doc:name="Choice" doc:id="77f6dd2c-128a-497d-af59-bd877b596a3d" >
+				<choice doc:name="Choice" doc:id="77f6dd2c-128a-497d-af59-bd877b596a3d">
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="2d68b227-e91b-4995-a7eb-c6eb84dcc3f1" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="2d68b227-e91b-4995-a7eb-c6eb84dcc3f1" type="MULE:EXPRESSION" />
 			</when>
-			<otherwise >
+			<otherwise>
 				<ee:transform doc:name="Carrito Creado" doc:id="e68f189b-25cc-4431-80f4-d664280b8c1c">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -1147,6 +1166,21 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Usuario No Verificado" doc:id="d6b2f329-b848-4722-86cc-1fde9b1fbb9d" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "El usuario no esta verificado."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="200" doc:name="Set httpStatus" doc:id="6a8f05e6-f4bd-46ae-ae32-752b1e3ce4cb" variableName="httpStatus"/>
 			</otherwise>
 		</choice>
 		<error-handler >
@@ -1171,24 +1205,7 @@ output application/json
 			<when expression='#[payload.Tipo_entrega == "Domicilio"]'>
 				<choice doc:name="Choice" doc:id="cffd3dd1-319d-44ab-92e9-9fb2bfd6ffc7" >
 					<when expression="#[payload.Direccion?]">
-						<ee:transform doc:name="Mapeo De Datos En Entrega A Domicilio" doc:id="fdc6150b-a9ea-43dd-bcaf-ad43d10b673e" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-[{
-	ClienteId__c : payload.ClienteId,
-	Total__c : payload.Total,
-	Tipo_pago__c : payload.Tipo_pago,
-	Tipo_entrega__c : payload.Tipo_entrega,
-	Celular__c : payload.Celular default "",
-	Productos__c : payload.Productos,
-	Estado__c : "Activa",
-	Direccion__c : payload.Direccion,
-	Anotactiones__c: payload.Anotaciones
-}]]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
+						<set-variable value='#[%dw 2.0&#10;output application/java&#10;---&#10;[{&#10;	IdUsuario__c : payload.IdUsuario,&#10;	Total__c : payload.Total,&#10;	Tipo_pago__c : payload.Tipo_pago,&#10;	Tipo_entrega__c : payload.Tipo_entrega,&#10;	Celular__c : payload.Celular default "",&#10;	Productos__c : payload.Productos,&#10;	Estado__c : "Activa",&#10;	Direccion__c : payload.Direccion,&#10;	Anotactiones__c: payload.Anotaciones&#10;}]]' doc:name="Mapeo De Datos En Entrega A Domicilio" doc:id="b68118d0-ba58-4404-a95b-4c97057810eb" variableName="orden"/>
 					</when>
 					<otherwise>
 						<raise-error doc:name="Raise error" doc:id="ea0c3a3b-1141-44d3-a603-d5d8359d6e5e" type="VALIDATIONS:DOMICILIO" description="Si selecciona entrega a domicilio indique su direccion."/>
@@ -1196,31 +1213,30 @@ output application/java
 				</choice>
 			</when>
 			<otherwise>
-				<ee:transform doc:name="Mapeo De Datos en Entrega A Sucursal" doc:id="1449697c-bb60-4c09-8c91-fa6e4da59d02" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/java
----
-[{
-	ClienteId__c : payload.ClienteId,
-	Total__c : payload.Total,
-	Tipo_pago__c : payload.Tipo_pago,
-	Tipo_entrega__c : payload.Tipo_entrega,
-	Celular__c : payload.Celular default "",
-	Productos__c : payload.Productos,
-	Estado__c : "Activa",
-	Anotaciones__c : payload.Anotaciones
-}]]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
+				<set-variable value='#[%dw 2.0&#10;output application/java&#10;---&#10;[{&#10;	IdUsuario__c : payload.IdUsuario,&#10;	Total__c : payload.Total,&#10;	Tipo_pago__c : payload.Tipo_pago,&#10;	Tipo_entrega__c : payload.Tipo_entrega,&#10;	Celular__c : payload.Celular default "",&#10;	Productos__c : payload.Productos,&#10;	Estado__c : "Activa",&#10;	Anotaciones__c : payload.Anotaciones&#10;}]]' doc:name="Mapeo De Datos en Entrega A Sucursal" doc:id="38e30f30-024e-4375-8284-29dfc0f8b50c" variableName="orden"/>
 			</otherwise>
 		</choice>
-		<salesforce:create type="Ordenes__c" doc:name="Creacion De La Orden" doc:id="ce542a24-15dd-47d5-9416-7eb2c68b3752" config-ref="Salesforce_Config"/>
-		<choice doc:name="Choice" doc:id="5ab59139-aab1-4f2c-b7e1-56251481ae58" >
+		<salesforce:query doc:name="Checar Verificado" doc:id="57764afa-80be-43ce-8faa-32a14433dd5e" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query ><![CDATA[SELECT
+	Verificado__c
+FROM Usuarios__c
+WHERE ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters ><![CDATA[#[output application/java
+---
+{
+	id : payload.IdUsuario
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="782a25db-bb97-41d5-8ca9-95f4556823e3" >
+			<when expression="#[payload.Verificado__c[0] ~= true]">
+				<salesforce:create type="Ordenes__c" doc:name="Creacion De La Orden" doc:id="ce542a24-15dd-47d5-9416-7eb2c68b3752" config-ref="Salesforce_Config" >
+					<salesforce:records ><![CDATA[#[vars.orden]]]></salesforce:records>
+				</salesforce:create>
+				<choice doc:name="Choice" doc:id="5ab59139-aab1-4f2c-b7e1-56251481ae58">
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="c404915d-3189-4ff6-bdca-1fdf31092741" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="c404915d-3189-4ff6-bdca-1fdf31092741" type="MULE:EXPRESSION" />
 			</when>
-			<otherwise >
+			<otherwise>
 				<ee:transform doc:name="Orden Creada" doc:id="af2b2df5-b56b-44ff-86de-b44eb79b0553">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -1231,6 +1247,21 @@ output application/json
 }]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
+			</otherwise>
+		</choice>
+			</when>
+			<otherwise >
+				<ee:transform doc:name="Usuario no Verificado" doc:id="fd878ca5-bc21-4f3d-8859-bc570144ac98" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Usuario no verificado."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="200" doc:name="Set httpStatus" doc:id="32b656fc-650a-4a62-a5bd-c1f03a0577d3" variableName="httpStatus"/>
 			</otherwise>
 		</choice>
 		<error-handler >
@@ -1377,14 +1408,14 @@ output application/json
 			</on-error-propagate>
 		</error-handler>
 	</flow>
-	<flow name="post:\login:application\json:restaurante-system-api-config" doc:id="27dfa765-3132-410f-ad76-87d6200b4ae6" >
+	<flow name="post:\login:application\json:restaurante-system-api-config" doc:id="27dfa765-3132-410f-ad76-87d6200b4ae6">
 		<salesforce:query doc:name="Obtener Usuario" doc:id="e28849cf-d323-4af9-bd6d-3f37bfbdc4b2" config-ref="Salesforce_Config" escapeSpecialCharactersForParametersValue="true">
-			<salesforce:salesforce-query ><![CDATA[SELECT
+			<salesforce:salesforce-query><![CDATA[SELECT
 	ID, Correo__c, Rol__c, Verificado__c
 FROM Usuarios__c
 WHERE Contrasena__c = ':contrasena'
 AND Correo__c = ':correo']]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[%dw 2.0
+			<salesforce:parameters><![CDATA[#[%dw 2.0
 output application/java
 ---
 {
@@ -1392,10 +1423,10 @@ output application/java
 	contrasena : payload.Contrasena
 }]]]></salesforce:parameters>
 		</salesforce:query>
-		<choice doc:name="Choice" doc:id="9547cea6-b988-4b2a-a29f-023fb706360e" >
+		<choice doc:name="Choice" doc:id="9547cea6-b988-4b2a-a29f-023fb706360e">
 			<when expression="#[sizeOf(payload) &gt; 0]">
-				<choice doc:name="Choice" doc:id="24cefc7e-64c5-40b9-b7e2-ef298a00bfe9" >
-					<when expression='#[payload.Verificado__c[0] ~= false]'>
+				<choice doc:name="Choice" doc:id="24cefc7e-64c5-40b9-b7e2-ef298a00bfe9">
+					<when expression="#[payload.Verificado__c[0] ~= false]">
 						<ee:transform doc:name="Usuario Encontrado No Verificado" doc:id="df963030-31a8-414e-bed7-fb3ddc641f61">
 							<ee:message>
 								<ee:set-payload><![CDATA[%dw 2.0
@@ -1424,10 +1455,10 @@ output application/json
 					</otherwise>
 				</choice>
 			</when>
-			<otherwise >
-				<ee:transform doc:name="Usuario No Encontrado" doc:id="e44ff86c-2b54-4d9e-879d-6ad250f0d560" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+			<otherwise>
+				<ee:transform doc:name="Usuario No Encontrado" doc:id="e44ff86c-2b54-4d9e-879d-6ad250f0d560">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -1435,7 +1466,7 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
-				<set-variable value="401" doc:name="httpStatus" doc:id="c0cc55c3-d19d-4db3-b9db-cf5a23f9892f" variableName="httpStatus"/>
+				<set-variable value="401" doc:name="httpStatus" doc:id="c0cc55c3-d19d-4db3-b9db-cf5a23f9892f" variableName="httpStatus" />
 			</otherwise>
 		</choice>
 	</flow>
