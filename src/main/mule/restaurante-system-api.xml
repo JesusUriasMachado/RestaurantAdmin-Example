@@ -154,7 +154,100 @@ output application/json
             </on-error-propagate>
         </error-handler>
     </flow>
-    <flow name="patch:\ordenes\(id):restaurante-system-api-config" doc:id="18c81898-4488-4b36-b888-ac0d9d8344cc" >
+    <flow name="patch:\usuarios\(id)\verificar:application\json:restaurante-system-api-config" doc:id="e718250a-c5ca-44e1-a4ab-0bebcd764db6">
+		<set-variable value="#[attributes.uriParams.id]" doc:name="Set Id" doc:id="bd8737dc-f7f4-4f32-8aaf-a0e1691b395f" variableName="id" />
+		<salesforce:query doc:name="Query" doc:id="428a43c7-160e-4056-88e9-948cd21b886c" config-ref="Salesforce_Config">
+			<salesforce:salesforce-query><![CDATA[SELECT
+	ID
+FROM Usuarios__c
+WHERE Codigo__c = ':codigo' AND Correo__c = ':correo' AND ID = ':id']]></salesforce:salesforce-query>
+			<salesforce:parameters><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	codigo : payload.Codigo,
+	correo : payload.Correo,
+	id : vars.id
+}]]]></salesforce:parameters>
+		</salesforce:query>
+		<choice doc:name="Choice" doc:id="d838b74a-e255-4f92-a1da-89f54d52def7">
+			<when expression="#[sizeOf(payload) &lt; 1]">
+				<ee:transform doc:name="Transform Message" doc:id="58b21ab0-e9d2-4aaa-9e21-c658a8ea8ff7">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Campos Incorrectos."
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="401" doc:name="Set httpStatus" doc:id="fc243714-240d-4557-9349-8d58ab467a27" variableName="httpStatus" />
+			</when>
+			<otherwise>
+				<ee:transform doc:name="Transform Message" doc:id="3adc6f0b-c349-4669-a08a-fb2b68e403a8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[{
+	ID : vars.id,
+	Verificado__c : true,
+	Codigo__c : "0000"
+}]]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<salesforce:update type="Usuarios__c" doc:name="Verificar Correo" doc:id="dcf3144a-9d55-4bd4-baea-fb3a591b24fd" config-ref="Salesforce_Config" />
+				<choice doc:name="Choice" doc:id="49608260-bb81-4ffd-a164-18dccce6c358">
+					<when expression="#[payload.successful == false]">
+						<raise-error doc:name="Raise error" doc:id="300bf40f-1e24-489c-a7a0-45892baecc73" type="CUSTOM:NOT_UPDATED" />
+					</when>
+					<otherwise>
+						<ee:transform doc:name="Transform Message" doc:id="b1e45d28-5f9d-44e9-bf7c-72afe1b764e0">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Usuario verificado."
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</otherwise>
+		</choice>
+		<error-handler>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="893d7a0d-373b-4fdb-b13c-4a6c612e522c" type="CUSTOM:NOT_UPDATED">
+				<ee:transform doc:name="Transform Message" doc:id="3ce61724-6e49-4191-a85f-a2ae903ecdbd">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error. No se pudo validar el usuario",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="400" doc:name="Set httStatus" doc:id="52f6b1fd-d8bf-44b5-b568-47ce050414a7" variableName="httpStatus" />
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2e869a56-ee63-491f-b3f9-32e3d1835161">
+				<ee:transform doc:name="Transform Message" doc:id="d358e60b-3ea2-4e37-ae18-6ab98f72ede0">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+	<flow name="patch:\ordenes\(id):restaurante-system-api-config" doc:id="18c81898-4488-4b36-b888-ac0d9d8344cc" >
 		<ee:transform doc:name="Mapeo De Datos" doc:id="e23a58ad-1fd2-41c0-a725-c9471e50050d" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -877,7 +970,7 @@ output application/json
     <flow name="get:\usuarios:restaurante-system-api-config">
         <salesforce:query doc:name="Obtener Usuarios" doc:id="8f36dbc8-ba92-45a0-ba8c-904414faa3dc" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, Nombre__c, Rol__c, Correo__c, Direccion__c, Celular__c
+	ID, Nombre__c, Rol__c, Correo__c, Direccion__c, Celular__c, Verificado__c
 FROM Usuarios__c]]></salesforce:salesforce-query>
 		</salesforce:query>
 		<ee:transform doc:name="Usuarios Encontrados">
@@ -1025,7 +1118,7 @@ output application/json
 		</error-handler>
     </flow>
 	<flow name="post:\kart:application\json:restaurante-system-api-config" doc:id="70278d8c-f218-48ed-b859-887aa826aba9" >
-		<ee:transform doc:name="Mapeo De Datos" doc:id="8e59f4af-5a1d-459a-9cbb-5ad9735610db" >
+		<ee:transform doc:name="Transform Message" doc:id="d8a2a101-e0d4-42fb-8532-ccee45b21268" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
 output application/java
@@ -1037,7 +1130,8 @@ output application/java
 }]]]></ee:set-payload>
 			</ee:message>
 		</ee:transform>
-		<salesforce:create doc:name="Insercion De Carrito" doc:id="ed4067bc-9abd-4412-b300-6cdc2bf64470" config-ref="Salesforce_Config" type="Kart__c"/>
+		<salesforce:create doc:name="Insercion De Carrito" doc:id="ed4067bc-9abd-4412-b300-6cdc2bf64470" config-ref="Salesforce_Config" type="Kart__c">
+		</salesforce:create>
 		<choice doc:name="Choice" doc:id="77f6dd2c-128a-497d-af59-bd877b596a3d" >
 			<when expression="#[payload.successful == false]">
 				<raise-error doc:name="Raise error" doc:id="2d68b227-e91b-4995-a7eb-c6eb84dcc3f1" type="MULE:EXPRESSION"/>
@@ -1286,7 +1380,7 @@ output application/json
 	<flow name="post:\login:application\json:restaurante-system-api-config" doc:id="27dfa765-3132-410f-ad76-87d6200b4ae6" >
 		<salesforce:query doc:name="Obtener Usuario" doc:id="e28849cf-d323-4af9-bd6d-3f37bfbdc4b2" config-ref="Salesforce_Config" escapeSpecialCharactersForParametersValue="true">
 			<salesforce:salesforce-query ><![CDATA[SELECT
-	ID, Correo__c, Rol__c
+	ID, Correo__c, Rol__c, Verificado__c
 FROM Usuarios__c
 WHERE Contrasena__c = ':contrasena'
 AND Correo__c = ':correo']]></salesforce:salesforce-query>
@@ -1300,9 +1394,25 @@ output application/java
 		</salesforce:query>
 		<choice doc:name="Choice" doc:id="9547cea6-b988-4b2a-a29f-023fb706360e" >
 			<when expression="#[sizeOf(payload) &gt; 0]">
-				<ee:transform doc:name="Usuario Encontrado" doc:id="d8d7a84a-acb9-479e-98ba-d2855c2d8312" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+				<choice doc:name="Choice" doc:id="24cefc7e-64c5-40b9-b7e2-ef298a00bfe9" >
+					<when expression='#[payload.Verificado__c[0] ~= false]'>
+						<ee:transform doc:name="Usuario Encontrado No Verificado" doc:id="df963030-31a8-414e-bed7-fb3ddc641f61">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	logged : true,
+	message : "Usuario no verificado.",
+	rol : payload.Rol__c
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise>
+						<ee:transform doc:name="Usuario Encontrado" doc:id="d8d7a84a-acb9-479e-98ba-d2855c2d8312">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -1311,6 +1421,8 @@ output application/json
 }]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
+					</otherwise>
+				</choice>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Usuario No Encontrado" doc:id="e44ff86c-2b54-4d9e-879d-6ad250f0d560" >
@@ -1326,98 +1438,5 @@ output application/json
 				<set-variable value="401" doc:name="httpStatus" doc:id="c0cc55c3-d19d-4db3-b9db-cf5a23f9892f" variableName="httpStatus"/>
 			</otherwise>
 		</choice>
-	</flow>
-	<flow name="patch:\usuarios\(id)\verificar:application\json:restaurante-system-api-config" doc:id="e718250a-c5ca-44e1-a4ab-0bebcd764db6" >
-		<set-variable value="#[attributes.uriParams.id]" doc:name="Set Id" doc:id="bd8737dc-f7f4-4f32-8aaf-a0e1691b395f" variableName="id"/>
-		<salesforce:query doc:name="Query" doc:id="428a43c7-160e-4056-88e9-948cd21b886c" config-ref="Salesforce_Config">
-			<salesforce:salesforce-query ><![CDATA[SELECT
-	ID
-FROM Usuarios__c
-WHERE Codigo__c = ':codigo' AND Correo__c = ':correo' AND ID = ':id']]></salesforce:salesforce-query>
-			<salesforce:parameters ><![CDATA[#[%dw 2.0
-output application/java
----
-{
-	codigo : payload.Codigo,
-	correo : payload.Correo,
-	id : vars.id
-}]]]></salesforce:parameters>
-		</salesforce:query>
-		<choice doc:name="Choice" doc:id="d838b74a-e255-4f92-a1da-89f54d52def7" >
-			<when expression="#[sizeOf(payload) &lt; 1]">
-				<ee:transform doc:name="Transform Message" doc:id="58b21ab0-e9d2-4aaa-9e21-c658a8ea8ff7" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Campos Incorrectos."
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-				<set-variable value="401" doc:name="Set httpStatus" doc:id="fc243714-240d-4557-9349-8d58ab467a27" variableName="httpStatus"/>
-			</when>
-			<otherwise>
-				<ee:transform doc:name="Transform Message" doc:id="3adc6f0b-c349-4669-a08a-fb2b68e403a8" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-[{
-	ID : vars.id,
-	Verificado__c : "Correo Verificado",
-	Codigo__c : "0000"
-}]]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-				<salesforce:update type="Usuarios__c" doc:name="Verificar Correo" doc:id="dcf3144a-9d55-4bd4-baea-fb3a591b24fd" config-ref="Salesforce_Config"/>
-				<choice doc:name="Choice" doc:id="49608260-bb81-4ffd-a164-18dccce6c358" >
-					<when expression="#[payload.successful == false]">
-						<raise-error doc:name="Raise error" doc:id="300bf40f-1e24-489c-a7a0-45892baecc73" type="CUSTOM:NOT_UPDATED"/>
-					</when>
-					<otherwise >
-						<ee:transform doc:name="Transform Message" doc:id="b1e45d28-5f9d-44e9-bf7c-72afe1b764e0" >
-							<ee:message >
-								<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Usuario verificado."
-}]]></ee:set-payload>
-							</ee:message>
-						</ee:transform>
-					</otherwise>
-				</choice>
-			</otherwise>
-		</choice>
-		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="893d7a0d-373b-4fdb-b13c-4a6c612e522c" type="CUSTOM:NOT_UPDATED">
-				<ee:transform doc:name="Transform Message" doc:id="3ce61724-6e49-4191-a85f-a2ae903ecdbd" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error. No se pudo validar el usuario",
-	details : payload.items.exception.message
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-				<set-variable value="400" doc:name="Set httStatus" doc:id="52f6b1fd-d8bf-44b5-b568-47ce050414a7" variableName="httpStatus"/>
-			</on-error-propagate>
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2e869a56-ee63-491f-b3f9-32e3d1835161" >
-				<ee:transform doc:name="Transform Message" doc:id="d358e60b-3ea2-4e37-ae18-6ab98f72ede0" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
-output application/json
----
-{
-	message : "Ocurrio un error desconocido.",
-	details : error.description
-}]]></ee:set-payload>
-					</ee:message>
-				</ee:transform>
-			</on-error-propagate>
-		</error-handler>
 	</flow>
 </mule>
