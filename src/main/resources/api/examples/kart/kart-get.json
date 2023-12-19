@@ -2,19 +2,16 @@
   {
     "Id": "123123123",
     "IdUsuario": "123abc",
-    "IdProducto": "321cba",
-    "Precio": 123
+    "IdProducto": "321cba"
   },
   {
     "Id": "123123123",
     "IdUsuario": "123abc",
-    "IdProducto": "321cba",
-    "Precio": 123
+    "IdProducto": "321cba"
   },
   {
     "Id": "123123123",
     "IdUsuario": "123abc",
-    "IdProducto": "321cba",
-    "Precio": 123
+    "IdProducto": "321cba"
   }
 ]

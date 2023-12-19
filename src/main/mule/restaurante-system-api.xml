@@ -827,7 +827,7 @@ output application/json
 		<try doc:name="Try" doc:id="ee642734-c16b-4ce5-9eca-983dd59e7723" >
 			<salesforce:query doc:name="Obtener Carritos" doc:id="3cd87b7b-d7c1-4c0a-a6c6-33045ca65bca" config-ref="Salesforce_Config">
 			<salesforce:salesforce-query><![CDATA[SELECT
-	ID, IdProducto__c, Precio__c
+	ID, IdProducto__c
 FROM Kart__c
 WHERE IdUsuario__c = ':id']]></salesforce:salesforce-query>
 			<salesforce:parameters><![CDATA[#[output application/java
@@ -856,18 +856,41 @@ output application/json
 				</ee:transform>
 				<set-variable value="404" doc:name="httpStatus" doc:id="c880a506-e2ba-4d58-a1f0-ab4db89f20eb" variableName="httpStatus"/>
 			</when>
-			<otherwise >
-				<ee:transform doc:name="Resultados Encontrados" doc:id="43c62f94-2b29-4e7e-80c2-b05464bd6b6b">
-			<ee:message>
-				<ee:set-payload><![CDATA[%dw 2.0
-output application/json
+			<otherwise>
+				<set-variable value="#[[]]" doc:name="Set Items" doc:id="e763c59d-d73c-4d01-b95e-37fa0fe99cc3" variableName="items"/>
+				<foreach doc:name="For Each" doc:id="c3f47c9b-dfcb-46ea-a58d-b5327fda7456" collection="#[payload]">
+					<salesforce:query doc:name="Obtener Productos" doc:id="f9830bd8-8fad-4bc0-aec1-ed042f18ecb2" config-ref="Salesforce_Config">
+						<salesforce:salesforce-query ><![CDATA[SELECT
+	ID, Nombre__c, Precio__c, Imagen__c
+FROM Menu__c
+WHERE Id = ':id']]></salesforce:salesforce-query>
+						<salesforce:parameters ><![CDATA[#[output application/java
 ---
 {
-	resultados : sizeOf(payload),
-	data : payload
-}]]></ee:set-payload>
-			</ee:message>
-		</ee:transform>
+	id : payload.IdProducto__c
+}]]]></salesforce:parameters>
+					</salesforce:query>
+					<logger level="INFO" doc:name="Logger" doc:id="c3fe06ba-299f-4ff8-bb33-e6ab04c000f7" message="#[payload]"/>
+					<set-variable value="#[payload]" doc:name="Set Item" doc:id="f1ed1c8f-346a-4a6c-86c5-0a22d151bce1" variableName="item"/>
+					<ee:transform doc:name="Transform Message" doc:id="2a57976c-a7dd-484f-8be4-cd9d5556b4bd" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="items" ><![CDATA[%dw 2.0
+output application/java
+---
+vars.items ++ vars.item]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+				</foreach>
+				<ee:transform doc:name="Resultados" doc:id="41ae5e03-bcb2-4d4b-8ff8-0970840101c9" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+vars.items]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
 			</otherwise>
 		</choice>
 		<error-handler >
