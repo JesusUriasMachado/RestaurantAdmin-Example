@@ -858,6 +858,7 @@ output application/json
 			</when>
 			<otherwise>
 				<set-variable value="#[[]]" doc:name="Set Items" doc:id="e763c59d-d73c-4d01-b95e-37fa0fe99cc3" variableName="items"/>
+				<set-variable value="0" doc:name="Set Total" doc:id="79772a6b-a5fc-4df0-996c-e2cf131d6292" variableName="total"/>
 				<foreach doc:name="For Each" doc:id="c3f47c9b-dfcb-46ea-a58d-b5327fda7456" collection="#[payload]">
 					<salesforce:query doc:name="Obtener Productos" doc:id="f9830bd8-8fad-4bc0-aec1-ed042f18ecb2" config-ref="Salesforce_Config">
 						<salesforce:salesforce-query ><![CDATA[SELECT
@@ -870,16 +871,24 @@ WHERE Id = ':id']]></salesforce:salesforce-query>
 	id : payload.IdProducto__c
 }]]]></salesforce:parameters>
 					</salesforce:query>
-					<logger level="INFO" doc:name="Logger" doc:id="c3fe06ba-299f-4ff8-bb33-e6ab04c000f7" message="#[payload]"/>
-					<set-variable value="#[payload]" doc:name="Set Item" doc:id="f1ed1c8f-346a-4a6c-86c5-0a22d151bce1" variableName="item"/>
-					<ee:transform doc:name="Transform Message" doc:id="2a57976c-a7dd-484f-8be4-cd9d5556b4bd" >
+					<ee:transform doc:name="Calcular Total" doc:id="6fd56f9a-adeb-4bb5-97f1-0594d49afdac" >
+						<ee:message >
+						</ee:message>
+						<ee:variables >
+							<ee:set-variable variableName="total" ><![CDATA[%dw 2.0
+output application/java
+---
+vars.total as Number + payload.Precio__c[0]]]></ee:set-variable>
+						</ee:variables>
+					</ee:transform>
+					<ee:transform doc:name="Agrupar Resultados" doc:id="2a57976c-a7dd-484f-8be4-cd9d5556b4bd" >
 						<ee:message >
 						</ee:message>
 						<ee:variables >
 							<ee:set-variable variableName="items" ><![CDATA[%dw 2.0
 output application/java
 ---
-vars.items ++ vars.item]]></ee:set-variable>
+vars.items ++ payload]]></ee:set-variable>
 						</ee:variables>
 					</ee:transform>
 				</foreach>
@@ -888,7 +897,10 @@ vars.items ++ vars.item]]></ee:set-variable>
 						<ee:set-payload ><![CDATA[%dw 2.0
 output application/json
 ---
-vars.items]]></ee:set-payload>
+{
+	resultados : vars.items,
+	total : vars.total
+}]]></ee:set-payload>
 					</ee:message>
 				</ee:transform>
 			</otherwise>
