@@ -307,6 +307,98 @@ output application/json
 			</on-error-propagate>
 		</error-handler>
 	</flow>
+	<flow name="patch:\usuarios\(id):restaurante-system-api-config" doc:id="c64177d6-2415-4bf1-80f2-bcd2de4b528a" >
+		<set-variable value="#[%dw 2.0&#10;output application/java&#10;---&#10;[{&#10;	ID : attributes.uriParams.id,&#10;	Nombre__c : payload.Nombre,&#10;	Direccion__c : payload.Direccion,&#10;	Correo__c : payload.Correo,&#10;	Contrasena__c : payload.Contrasena,&#10;	Celular__c : payload.Celular&#10;}]]" doc:name="Set Doc" doc:id="23fd8741-bc63-4014-9bc1-00987bda22cb" variableName="doc"/>
+		<salesforce:query doc:name="Query" doc:id="43e539fa-73f2-4f82-ba9f-b6504be9b7ed" config-ref="Salesforce_Config">
+					<salesforce:salesforce-query><![CDATA[SELECT
+	Correo__c
+FROM Usuarios__c
+WHERE ID = ':id']]></salesforce:salesforce-query>
+					<salesforce:parameters><![CDATA[#[output application/java
+---
+{
+	id : vars.doc.ID[0]
+}]]]></salesforce:parameters>
+				</salesforce:query>
+		<set-variable value="#[payload.Correo__c]" doc:name="Set Correo" doc:id="fd123da0-57fc-4af1-a4c9-ab5819aa7c10" variableName="correo"/>
+		<salesforce:update doc:name="Modificar Usuario" doc:id="dd545276-98d4-49a2-9db9-dd84fbb6724b" config-ref="Salesforce_Config" type="Usuarios__c">
+			<salesforce:records ><![CDATA[#[vars.doc]]]></salesforce:records>
+		</salesforce:update>
+		<choice doc:name="Choice" doc:id="97f629f2-3f69-4063-8ba3-cd56381afbbe" >
+			<when expression="#[payload.successful == false]">
+				<raise-error doc:name="Raise error" doc:id="69d7e90c-0601-4b79-9fa7-25cab7bd8baa" type="CUSTOM:NOT_UPDATED"/>
+			</when>
+			<otherwise >
+				<choice doc:name="Choice" doc:id="4cce519d-6aa5-43ae-a284-979ae3327062" >
+					<when expression="#[(vars.doc.Correo__c[0] != null) and (vars.correo[0] != vars.doc.Correo__c[0])]">
+						<ee:transform doc:name="Quitar Verificado" doc:id="33cdce41-5c50-493d-959e-2696502c2dfd">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+[{
+	ID : vars.doc.ID[0],
+	Verificado__c : false
+}]]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<salesforce:update type="Usuarios__c" doc:name="Update" doc:id="d1c64e0b-3040-4654-9576-83e4c6ddf110" config-ref="Salesforce_Config" />
+						<ee:transform doc:name="Transform Message" doc:id="4e3da5ff-506a-4b0d-916c-d4161ee6aa93">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Usuario y Correo modificado, vuelva a verificar su correo."
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</when>
+					<otherwise>
+						<ee:transform doc:name="Usuario Modificado" doc:id="67a0f050-0255-4875-86f7-4476602a6a97">
+							<ee:message>
+								<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Usuario modificado."
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+					</otherwise>
+				</choice>
+			</otherwise>
+		</choice>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2c2e83dc-6752-4481-b3f5-b46f62ff904c" type="CUSTOM:NOT_UPDATED">
+				<ee:transform doc:name="Usuario No Modificado" doc:id="3cd53424-e258-4e59-bc31-ff4b861fb377" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error al modificar el usuario.",
+	details : payload.items.exception.message
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<set-variable value="400" doc:name="Set httpStatus" doc:id="ea2c522c-235a-4915-b555-afca33971f2c" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="2d3634d6-6905-405a-8922-d2eff3baf8ad" >
+				<ee:transform doc:name="Transform Message" doc:id="1a0d88b1-0f2e-43e7-8fb2-168a7def1511" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Ocurrio un error desconocido.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
 	<flow name="put:\menu\(id):restaurante-system-api-config" doc:id="4e9178a6-8e91-4d13-a14c-f39d7bb94161" >
 		<ee:transform doc:name="Mapeo De Datos" doc:id="f8f6dc24-f16e-4d83-9dbb-70d87eee61df" >
 			<ee:message >
@@ -1331,7 +1423,7 @@ output application/json
 	</flow>
 	<flow name="post:\usuarios:application\json:restaurante-system-api-config">
         <set-variable value='#[(random() * 10000) as String {format: "0000"}]' doc:name="Set Codigo" doc:id="410479e5-f145-4106-8f55-00622345a882" variableName="codigo"/>
-		<set-variable value="#[payload.Correo]" doc:name="Set Variable" doc:id="328015ab-2484-42ec-a84d-a76b06083184" variableName="correo"/>
+		<set-variable value="#[payload.Correo]" doc:name="Set Correo" doc:id="328015ab-2484-42ec-a84d-a76b06083184" variableName="correo"/>
 		<ee:transform doc:name="Mapeo De Datos" doc:id="b88a1329-c7f3-49f3-a097-87017742b77d" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0

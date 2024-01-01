@@ -182,6 +182,21 @@ traits:
               example: {
                 "message" : "Eliminado"
               }
+    patch:
+      description: Se usa para actualizar un usuario
+      displayName: Modificar usuario
+      body:
+        application/json:
+          example: !include examples/usuarios/usuarios-post.json
+      is:
+        - hasHeaders
+        - responses
+      responses:
+        201:
+          description: CREATED
+          body:
+            application/json:
+              example: !include examples/usuarios/usuarios-post.json
     /verificar:
       post:
           description: Se actualiza el codigo de verificacion
