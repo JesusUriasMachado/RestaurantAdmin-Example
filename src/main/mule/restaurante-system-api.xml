@@ -1436,7 +1436,7 @@ output application/json
 	Correo__c : payload.Correo,
 	Contrasena__c : payload.Contrasena,
 	Celular__c : payload.Celular,
-	Verificado__c : "No Verificado",
+	Verificado__c : false,
 	Codigo__c : vars.codigo
 }]]]></ee:set-payload>
 			</ee:message>
@@ -1595,7 +1595,7 @@ output application/java
 		<salesforce:create doc:name="Creacion Del Ticket" doc:id="e6d68c8a-99d4-4841-8522-95286aa138c4" config-ref="Salesforce_Config" type="Tickets__c"/>
 		<choice doc:name="Choice" doc:id="4fb4e098-c773-4f38-82ce-c40ce65f97f5" >
 			<when expression="#[payload.successful == false]">
-				<raise-error doc:name="Raise error" doc:id="e139aa1d-56c2-4d03-9e71-188abcd9d69f" type="MULE:EXPRESSION"/>
+				<raise-error doc:name="Raise error" doc:id="e139aa1d-56c2-4d03-9e71-188abcd9d69f" type="CUSTOM:NOT_CREATED"/>
 			</when>
 			<otherwise >
 				<ee:transform doc:name="Ticket Creado" doc:id="7b66ad0f-3ea9-4c30-af85-1739d174b40b" >
@@ -1611,7 +1611,7 @@ output application/json
 			</otherwise>
 		</choice>
 		<error-handler >
-			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a746791c-39c0-4dde-8e8e-beb1eac9e827" >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="a746791c-39c0-4dde-8e8e-beb1eac9e827" type="CUSTOM:NOT_CREATED">
 				<ee:transform doc:name="Ticket No Creado" doc:id="1dbb6a0c-6a2e-4488-a486-760ee5ce143d">
 			<ee:message>
 				<ee:set-payload><![CDATA[%dw 2.0
@@ -1624,6 +1624,19 @@ output application/json
 			</ee:message>
 		</ee:transform>
 				<set-variable value="400" doc:name="httpStatus" doc:id="5ba56ca3-0a95-426d-aa27-5fce8e41a7cb" variableName="httpStatus"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="3efac6a4-4dce-4a4d-9fe9-b43e7f0583c4" >
+				<ee:transform doc:name="Transform Message" doc:id="3750cdbf-92fa-4476-a86f-4f8602943261" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message : "Unknown error.",
+	details : error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
 			</on-error-propagate>
 		</error-handler>
 	</flow>
